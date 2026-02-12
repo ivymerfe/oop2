@@ -36,23 +36,16 @@ public class GameHost implements IGameHost {
             String guess;
             while (true) {
                 guess = tui.readLineWithDeadline("Какое же число?: ", status, attemptDeadlineMs);
-                if (guess == null) {
-                    logger.info("Attempt {}/{}: timeout (no input)", attemptNo, params.maxAttempts);
-                    tui.println("Игра окончена: вышло время.");
-                    tui.println("Загаданное число: " + game.getSecretNumber());
-                    logger.info("hostGame: finish by timeout. secret={}", game.getSecretNumber());
-                    return;
-                }
-                if (System.currentTimeMillis() > attemptDeadlineMs) {
-                    logger.info("Attempt {}/{}: timeout (deadline exceeded after input)", attemptNo, params.maxAttempts);
-                    tui.println("Игра окончена: вышло время.");
+                if (guess == null || System.currentTimeMillis() > attemptDeadlineMs) {
+                    logger.info("Attempt {}/{}: timeout", attemptNo, params.maxAttempts);
+                    tui.println("У тебя вышло время, ты думаешь очень медленно");
                     tui.println("Загаданное число: " + game.getSecretNumber());
                     logger.info("hostGame: finish by timeout. secret={}", game.getSecretNumber());
                     return;
                 }
                 if (guess.isEmpty()) {
                     logger.info("Attempt {}/{}: empty input", attemptNo, params.maxAttempts);
-                    if (tui.confirmExit()) {
+                    if (tui.askYesNo("Ты хочешь уйти с позором? (y/N): ", false)) {
                         tui.println("Загаданное число: " + game.getSecretNumber());
                         logger.info("hostGame: user exit confirmed. secret={}", game.getSecretNumber());
                         return;
@@ -72,7 +65,7 @@ public class GameHost implements IGameHost {
                 }
                 if (guess.chars().distinct().count() != params.secretLength) {
                     logger.info("Attempt {}/{}: repeated digits in guess='{}'", attemptNo, params.maxAttempts, guess);
-                    tui.println("Повторяющиеся цифры не допускаются");
+                    tui.println("Без повторов");
                     continue;
                 }
                 break;
@@ -92,7 +85,7 @@ public class GameHost implements IGameHost {
             tui.println(String.format("Быков: %d, Коров: %d", result.bulls, result.cows));
         }
 
-        tui.println("Попытки закончились.");
+        tui.println("У тебя закончились попытки, ты не смог");
         tui.println("Загаданное число: " + game.getSecretNumber());
         logger.info("hostGame: finish by attempts exhausted. secret={}", game.getSecretNumber());
     }

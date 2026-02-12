@@ -151,16 +151,6 @@ public class GameTui {
             out.println("Ответь y/n");
         }
     }
-
-    /**
-     * Подтверждает намерение пользователя завершить игру.
-     *
-     * @return {@code true}, если пользователь подтвердил выход
-     */
-    public boolean confirmExit() {
-        logger.info("confirmExit requested");
-        return askYesNo("Ты хочешь уйти с позором? (y/N): ", false);
-    }
     
     /**
      * Считывает строку с обратным отсчетом в секундах.
