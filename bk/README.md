@@ -27,7 +27,7 @@ mvn -version
 ### 2) Склонируй проект
 
 ```bash
-git clone <URL_твоего_репозитория>
+git clone https://github.com/ivymerfe/oop2
 cd bk
 ```
 
