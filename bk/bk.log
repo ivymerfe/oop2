@@ -1,0 +1,15 @@
+2026-02-12 09:52:00.247 [main] INFO  m.i.BullsCowsGame - generateSecretNumber: length=4
+2026-02-12 09:52:00.266 [main] INFO  m.i.GameTui - askInt: prompt='Число' -> invalid integer input 'abc'
+2026-02-12 09:52:00.267 [main] INFO  m.i.GameTui - askInt: prompt='Число' -> out of range 11 (allowed 1..10)
+2026-02-12 09:52:00.267 [main] INFO  m.i.GameTui - askInt: prompt='Число' -> 5
+2026-02-12 09:52:00.286 [main] INFO  m.i.GameTui - Choose game parameters: defaults=GameParameters{secretLength=4, maxAttempts=10, timeToGuess=30}
+2026-02-12 09:52:00.286 [main] INFO  m.i.GameTui - askYesNo: prompt='Изменить настройки? (y/N): ' -> YES (input='y')
+2026-02-12 09:52:00.287 [main] INFO  m.i.GameTui - askInt: prompt='Длина числа' -> 6
+2026-02-12 09:52:00.287 [main] INFO  m.i.GameTui - askInt: prompt='Максимум попыток' -> 20
+2026-02-12 09:52:00.287 [main] INFO  m.i.GameTui - askInt: prompt='Время на попытку (сек)' -> 45
+2026-02-12 09:52:00.287 [main] INFO  m.i.GameTui - Choose game parameters: selected=GameParameters{secretLength=6, maxAttempts=20, timeToGuess=45}
+2026-02-12 09:52:00.290 [main] INFO  m.i.GameTui - askYesNo: prompt='Q: ' -> empty input, using default false
+2026-02-12 09:52:00.292 [main] INFO  m.i.GameTui - Choose game parameters: defaults=GameParameters{secretLength=4, maxAttempts=10, timeToGuess=30}
+2026-02-12 09:52:00.293 [main] INFO  m.i.GameTui - askYesNo: prompt='Изменить настройки? (y/N): ' -> empty input, using default false
+2026-02-12 09:52:00.293 [main] INFO  m.i.GameTui - Choose game parameters: keep defaults
+2026-02-12 09:52:00.296 [main] INFO  m.i.GameTui - askYesNo: prompt='Q: ' -> YES (input='да')

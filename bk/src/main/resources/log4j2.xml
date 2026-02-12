@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %c{1.} - %msg%n</Property>
+        <Property name="LOG_FILE">bk.log</Property>
+    </Properties>
+
+    <Appenders>
+        <File name="BkFile" fileName="${LOG_FILE}" append="true" immediateFlush="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="BkFile"/>
+        </Root>
+    </Loggers>
+</Configuration>
