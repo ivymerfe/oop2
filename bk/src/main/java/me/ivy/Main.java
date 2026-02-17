@@ -8,7 +8,7 @@ public class Main {
 
     public static void main(String[] args) {
         logger.info("Application started");
-        IBullsCowsGame game = new BullsCowsGame();
+        BullsCowsGame game = new BullsCowsGame();
         GameTui tui = new GameTui(System.in, System.out);
         GameHost host = new GameHost(game, tui);
 

@@ -6,21 +6,26 @@ import org.apache.logging.log4j.Logger;
 /**
  * Координирует игровой процесс между логикой игры и текстовым интерфейсом.
  */
-public class GameHost implements IGameHost {
+public class GameHost {
     private static final Logger logger = LogManager.getLogger(GameHost.class);
 
-    private final IBullsCowsGame game;
+    private final BullsCowsGame game;
     private final GameTui tui;
 
     /**
      * @param game игровая логика
      * @param tui текстовый интерфейс
      */
-    public GameHost(IBullsCowsGame game, GameTui tui) {
+    public GameHost(BullsCowsGame game, GameTui tui) {
         this.game = game;
         this.tui = tui;
     }
 
+    /**
+     * Запускает один сеанс игры с указанными параметрами.
+     *
+     * @param params параметры игрового сеанса
+     */
     public void hostGame(GameParameters params) {
         logger.info("hostGame: start params={}", params);
         game.generateSecretNumber(params.secretLength);

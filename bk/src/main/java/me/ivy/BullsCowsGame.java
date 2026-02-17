@@ -10,12 +10,17 @@ import org.apache.logging.log4j.Logger;
 /**
  * Реализация логики игры «Быки и коровы».
  */
-public class BullsCowsGame implements IBullsCowsGame {
+public class BullsCowsGame {
     private static final Logger logger = LogManager.getLogger(BullsCowsGame.class);
 
     List<Character> digits = Arrays.asList('0','1','2','3','4','5','6','7','8','9');
     int secretLength;
 
+    /**
+     * Генерирует новое секретное число заданной длины.
+     *
+     * @param length длина секрета в цифрах
+     */
     public void generateSecretNumber(int length) {
         if (length < 1 || length > 10) {
             throw new IllegalArgumentException("secret length must be between 1 and 10");
@@ -26,6 +31,11 @@ public class BullsCowsGame implements IBullsCowsGame {
         logger.debug("generateSecretNumber: secret={}", getSecretNumber());
     }
 
+    /**
+     * Возвращает текущее секретное число.
+     *
+     * @return секретное число
+     */
     public String getSecretNumber() {
         char[] tmp = new char[this.secretLength];
         for (int i = 0; i < this.secretLength; i++) {
@@ -34,6 +44,12 @@ public class BullsCowsGame implements IBullsCowsGame {
         return String.valueOf(tmp);
     }
 
+    /**
+     * Проверяет пользовательскую догадку и возвращает результат сравнения.
+     *
+     * @param guess догадка игрока
+     * @return количество быков и коров
+     */
     public GuessResult tryGuess(String guess) {
         if (guess.length() != secretLength) {
             throw new IllegalArgumentException("Guess length must be exactly " + secretLength);
