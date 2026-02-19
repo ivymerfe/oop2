@@ -151,27 +151,6 @@ public class GameTui {
             out.println("Ответь y/n");
         }
     }
-    
-    /**
-     * Считывает строку с обратным отсчетом в секундах.
-     *
-     * @param prompt текст приглашения
-     * @param statusPrefix префикс статусной строки
-     * @param timeoutSeconds время ожидания в секундах
-     * @return введенная строка или {@code null} при истечении времени
-     */
-    public String readLineWithCountdown(String prompt, String statusPrefix, int timeoutSeconds) {
-        if (timeoutSeconds <= 0) {
-            out.print(prompt);
-            out.flush();
-            logger.debug("readLineWithCountdown: no timeout, prompt='{}'", prompt);
-            return readLineUnbounded();
-        }
-
-        long deadlineMs = System.currentTimeMillis() + timeoutSeconds * 1000L;
-        logger.debug("readLineWithCountdown: timeoutSeconds={}, prompt='{}'", timeoutSeconds, prompt);
-        return readLineWithDeadline(prompt, statusPrefix, deadlineMs);
-    }
 
     /**
      * Считывает строку до указанного абсолютного дедлайна.
