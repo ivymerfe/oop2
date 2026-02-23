@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CalculatorApp",
+            "request": "launch",
+            "mainClass": "me.ivy.calc_app/me.ivy.calc_app.CalculatorApp",
+            "projectName": "calc",
+        }
+    ]
+}

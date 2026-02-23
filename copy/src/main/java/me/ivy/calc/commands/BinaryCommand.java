@@ -1,4 +1,8 @@
-package me.ivy.calc;
+package me.ivy.calc.commands;
+
+import me.ivy.calc.Command;
+import me.ivy.calc.Stack;
+import me.ivy.calc.Variables;
 
 public class BinaryCommand extends Command {
     private final String operator;

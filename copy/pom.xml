@@ -50,38 +50,10 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>me.ivy.calc_app.CalculatorApp</mainClass>
+                            <mainClass>me.ivy.calc.CalculatorApp</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>basic-commands-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>basic_commands</classifier>
-                            <includes>
-                                <include>me/ivy/basic_commands/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>binary-commands-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                        <configuration>
-                            <classifier>binary_commands</classifier>
-                            <includes>
-                                <include>me/ivy/binary_commands/**</include>
-                            </includes>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.openjfx</groupId>
@@ -92,7 +64,7 @@
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>me.ivy.calc_app.CalculatorApp</mainClass>
+                            <mainClass>me.ivy.calc/me.ivy.calc.CalculatorApp</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>

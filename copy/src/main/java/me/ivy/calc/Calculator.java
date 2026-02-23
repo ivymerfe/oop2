@@ -1,19 +1,18 @@
 package me.ivy.calc;
 
-import java.util.ArrayList;
+import me.ivy.calc.commands.PrintCommand;
+
 import java.util.List;
 
 public class Calculator {
     private final Stack stack;
     private final Variables variables;
-    private final ExecutionContext context;
     private final CommandFactory factory;
 
     public Calculator() {
         this.stack = new Stack();
         this.variables = new Variables();
-        this.context = new ExecutionContext(stack, variables.asMap());
-        this.factory = new CommandFactory();
+        this.factory = new CommandFactory(stack, variables);
     }
 
     public String execute(String program) {
@@ -57,15 +56,18 @@ public class Calculator {
             return "";
         }
         String commandName = tokens[0];
-        List<Object> args = new ArrayList<>();
-        for (int i = 1; i < tokens.length; i++) {
-            args.add(tokens[i]);
-        }
         
         try {
-            Command cmd = factory.createCommand(commandName, context);
-            return cmd.execute(args);
-        } catch (CommandException e) {
+            Command cmd = factory.createCommand(commandName);
+            
+            // Special handling for PRINT
+            if (cmd instanceof PrintCommand) {
+                return ((PrintCommand) cmd).getOutput();
+            } else {
+                cmd.execute(tokens);
+                return "";
+            }
+        } catch (Command.CommandException e) {
             return "ERR " + e.getMessage();
         }
     }

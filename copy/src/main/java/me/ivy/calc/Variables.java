@@ -34,8 +34,4 @@ public class Variables {
     public void clear() {
         params.clear();
     }
-
-    public Map<String, Double> asMap() {
-        return params;
-    }
 }
