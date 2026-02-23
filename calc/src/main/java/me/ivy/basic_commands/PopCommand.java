@@ -9,16 +9,12 @@ import java.util.List;
 
 @CommandName("POP")
 public class PopCommand extends Command {
-    public PopCommand(ExecutionContext context) {
-        super(context);
-    }
-
     @Override
-    public String execute(List<Object> args) throws CommandExecutionException {
-        if (stack().isEmpty()) {
+    public String execute(ExecutionContext context, List<Object> args) throws CommandExecutionException {
+        if (context.stack().isEmpty()) {
             throw new CommandExecutionException("POP on empty stack");
         }
-        stack().pop();
+        context.stack().pop();
         return "";
     }
 }

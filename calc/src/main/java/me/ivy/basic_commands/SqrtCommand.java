@@ -9,21 +9,17 @@ import java.util.List;
 
 @CommandName("SQRT")
 public class SqrtCommand extends Command {
-    public SqrtCommand(ExecutionContext context) {
-        super(context);
-    }
-
     @Override
-    public String execute(List<Object> args) throws CommandExecutionException {
-        if (stack().isEmpty()) {
+    public String execute(ExecutionContext context, List<Object> args) throws CommandExecutionException {
+        if (context.stack().isEmpty()) {
             throw new CommandExecutionException("SQRT on empty stack");
         }
-        double value = stack().pop();
+        double value = context.stack().pop();
         if (value < 0) {
-            stack().push(value);
+            context.stack().push(value);
             throw new CommandExecutionException("SQRT of negative value");
         }
-        stack().push(Math.sqrt(value));
+        context.stack().push(Math.sqrt(value));
         return "";
     }
 }

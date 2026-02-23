@@ -13,41 +13,37 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class CommandFactory {
     private static final String CONFIG_RESOURCE = "command-jars.conf";
-    private final Map<String, CommandCreator> creators = new ConcurrentHashMap<>();
+    private final Map<String, Class<? extends Command>> commands = new HashMap<>();
 
     public CommandFactory() {
         loadConfiguredCommands();
     }
 
-    public Command createCommand(String commandName, ExecutionContext context) throws CommandException {
+    public Command getCommand(String commandName) throws CommandException {
         String cmd = commandName.toUpperCase(Locale.ROOT);
-        CommandCreator creator = creators.get(cmd);
-        if (creator == null) {
+        Class<? extends Command> commandClass = commands.get(cmd);
+        if (commandClass == null) {
             throw new UnknownCommandException("Unknown command: " + commandName);
         }
-        return creator.create(context, cmd);
+        return instantiate(commandClass, cmd);
     }
 
     private void loadConfiguredCommands() {
         List<String> jars = loadJarPathsFromConfig();
-        Set<Class<?>> discovered = new HashSet<>();
         for (String jarPath : jars) {
-            discovered.addAll(loadCommandClassesFromJar(jarPath));
-        }
-
-        for (Class<?> type : discovered) {
-            registerAnnotatedCommand(type);
+            List<Class<?>> discovered = loadCommandClassesFromJar(jarPath);
+            for (Class<?> type : discovered) {
+                registerAnnotatedCommand(type);
+            }
         }
     }
 
@@ -119,37 +115,26 @@ public class CommandFactory {
             return;
         }
 
-        CommandCreator creator = buildCreator(commandClass);
         for (String name : annotation.value()) {
-            creators.put(name.toUpperCase(Locale.ROOT), creator);
+            commands.put(name.toUpperCase(Locale.ROOT), commandClass);
         }
     }
 
-    private CommandCreator buildCreator(Class<? extends Command> commandClass) {
+    private Command instantiate(Class<? extends Command> commandClass, String commandName) throws CommandException {
         try {
-            Constructor<? extends Command> ctorWithName = commandClass.getConstructor(ExecutionContext.class,
-                    String.class);
-            return (context, commandName) -> instantiate(ctorWithName, context, commandName);
+            Constructor<? extends Command> ctorWithName = commandClass.getConstructor(String.class);
+            return ctorWithName.newInstance(commandName);
         } catch (NoSuchMethodException ignored) {
             try {
-                Constructor<? extends Command> ctor = commandClass.getConstructor(ExecutionContext.class);
-                return (context, commandName) -> instantiate(ctor, context);
+                Constructor<? extends Command> ctor = commandClass.getConstructor();
+                return ctor.newInstance();
             } catch (NoSuchMethodException e) {
-                throw new IllegalStateException("Command constructor not found for " + commandClass.getName(), e);
+                throw new CommandException("Command constructor not found: " + commandClass.getSimpleName(), e);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                throw new CommandException("Cannot instantiate command: " + commandClass.getSimpleName(), e);
             }
-        }
-    }
-
-    private Command instantiate(Constructor<? extends Command> ctor, Object... args) throws CommandException {
-        try {
-            return ctor.newInstance(args);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new CommandException("Cannot instantiate command: " + ctor.getDeclaringClass().getSimpleName(), e);
+            throw new CommandException("Cannot instantiate command: " + commandClass.getSimpleName(), e);
         }
-    }
-
-    @FunctionalInterface
-    private interface CommandCreator {
-        Command create(ExecutionContext context, String commandName) throws CommandException;
     }
 }

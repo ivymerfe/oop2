@@ -11,22 +11,21 @@ import java.util.List;
 public class BinaryCommand extends Command {
     private final String operator;
 
-    public BinaryCommand(ExecutionContext context, String operator) {
-        super(context);
+    public BinaryCommand(String operator) {
         this.operator = operator;
     }
 
     @Override
-    public String execute(List<Object> args) throws CommandExecutionException {
-        if (stack().size() < 2) {
+    public String execute(ExecutionContext context, List<Object> args) throws CommandExecutionException {
+        if (context.stack().size() < 2) {
             throw new CommandExecutionException("Not enough values on stack for " + operator);
         }
-        double right = stack().pop();
-        double left = stack().pop();
+        double right = context.stack().pop();
+        double left = context.stack().pop();
 
         if (operator.equals("/") && right == 0.0) {
-            stack().push(left);
-            stack().push(right);
+            context.stack().push(left);
+            context.stack().push(right);
             throw new CommandExecutionException("Division by zero");
         }
 
@@ -38,7 +37,7 @@ public class BinaryCommand extends Command {
             default -> throw new CommandExecutionException("Unknown operator: " + operator);
         };
 
-        stack().push(result);
+        context.stack().push(result);
         return "";
     }
 }

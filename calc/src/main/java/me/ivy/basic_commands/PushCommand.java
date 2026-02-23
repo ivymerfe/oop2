@@ -10,18 +10,14 @@ import java.util.OptionalDouble;
 
 @CommandName("PUSH")
 public class PushCommand extends Command {
-    public PushCommand(ExecutionContext context) {
-        super(context);
-    }
-
     @Override
-    public String execute(List<Object> args) throws CommandArgumentsException {
+    public String execute(ExecutionContext context, List<Object> args) throws CommandArgumentsException {
         String token = requireStringArgument(args, 0, "value");
-        OptionalDouble value = resolveNumericToken(token);
+        OptionalDouble value = resolveNumericToken(context, token);
         if (value.isEmpty()) {
             throw new CommandArgumentsException("Unknown value: " + token);
         }
-        stack().push(value.getAsDouble());
+        context.stack().push(value.getAsDouble());
         return "";
     }
 }

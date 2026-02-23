@@ -63,8 +63,8 @@ public class Calculator {
         }
         
         try {
-            Command cmd = factory.createCommand(commandName, context);
-            return cmd.execute(args);
+            Command cmd = factory.getCommand(commandName);
+            return cmd.execute(context, args);
         } catch (CommandException e) {
             return "ERR " + e.getMessage();
         }

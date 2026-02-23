@@ -11,11 +11,11 @@ public class ExecutionContext {
         this.variables = variables;
     }
 
-    public Stack getStack() {
+    public Stack stack() {
         return stack;
     }
 
-    public Map<String, Double> getVariables() {
+    public Map<String, Double> variables() {
         return variables;
     }
 }

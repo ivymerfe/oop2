@@ -10,19 +10,15 @@ import java.util.OptionalDouble;
 
 @CommandName("DEFINE")
 public class DefineCommand extends Command {
-    public DefineCommand(ExecutionContext context) {
-        super(context);
-    }
-
     @Override
-    public String execute(List<Object> args) throws CommandArgumentsException {
+    public String execute(ExecutionContext context, List<Object> args) throws CommandArgumentsException {
         String name = requireStringArgument(args, 0, "name");
         String token = requireStringArgument(args, 1, "value");
-        OptionalDouble value = resolveNumericToken(token);
+        OptionalDouble value = resolveNumericToken(context, token);
         if (value.isEmpty()) {
             throw new CommandArgumentsException("Unknown value: " + token);
         }
-        variables().put(name, value.getAsDouble());
+        context.variables().put(name, value.getAsDouble());
         return "";
     }
 }
