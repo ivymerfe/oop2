@@ -44,7 +44,6 @@
             <HBox spacing="10" style="-fx-padding: 5;">
                 <Button text="Сохранить" onAction="#handleSave"/>
                 <Button text="Загрузить" onAction="#handleLoad"/>
-                <Button text="Выполнить" onAction="#handleRunProgram"/>
             </HBox>
         </VBox>
     </SplitPane>

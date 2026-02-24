@@ -42,6 +42,10 @@ public class Stack {
         return items;
     }
 
+    public List<Double> getValues() {
+        return new ArrayList<>(values);
+    }
+
     public void clear() {
         values.clear();
     }

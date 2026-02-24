@@ -21,12 +21,14 @@ import me.ivy.calc.StateSerializer;
 
 import java.io.File;
 
-public class CalculatorApp extends Application {
-    private final Calculator calculator = new Calculator();
-    private Stage primaryStage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-    private final ObservableList<String> stackItems = FXCollections.observableArrayList();
-    private final ObservableList<String> paramItems = FXCollections.observableArrayList();
+public class CalculatorApp extends Application {
+    private static final Logger logger = LogManager.getLogger(CalculatorApp.class);
+    private static final Calculator calculator = new Calculator();
+
+    private Stage primaryStage;
 
     @FXML
     private TextArea inputArea;
@@ -39,6 +41,9 @@ public class CalculatorApp extends Application {
 
     @FXML
     private ListView<String> paramView;
+
+    private final ObservableList<String> stackItems = FXCollections.observableArrayList();
+    private final ObservableList<String> paramItems = FXCollections.observableArrayList();
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -53,6 +58,7 @@ public class CalculatorApp extends Application {
 
         stage.setScene(scene);
         stage.show();
+        logger.info("Calculator application started");
     }
 
     @FXML
@@ -93,36 +99,9 @@ public class CalculatorApp extends Application {
     }
 
     @FXML
-    public void handleRunProgram() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Загрузить программу");
-        fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Program Files (*.calp)", "*.calp")
-        );
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-
-        File file = fileChooser.showOpenDialog(primaryStage);
-        if (file != null) {
-            try {
-                String content = new String(java.nio.file.Files.readAllBytes(file.toPath()));
-                String output = calculator.execute(content);
-                
-                StringBuilder history = new StringBuilder("$file: " + file.getAbsolutePath());
-                history.append("\n......\n");
-                history.append(output.isEmpty() ? "ok" : output);
-                history.append("\n-----\n");
-                
-                historyArea.appendText(history.toString());
-                historyArea.setScrollTop(Double.MAX_VALUE);
-                refreshViews();
-            } catch (Exception e) {
-                showError("Ошибка", "Ошибка при выполнении программы: " + e.getMessage());
-            }
-        }
-    }
-
-    @FXML
     public void handleSave() {
+        logger.info("Save state initiated by user");
+
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Сохранить состояние");
         fileChooser.getExtensionFilters().add(
@@ -135,7 +114,9 @@ public class CalculatorApp extends Application {
         if (file != null) {
             try {
                 StateSerializer.saveState(calculator.getStack(), calculator.getVariables(), file.toPath());
+                logger.info("State saved successfully to {}", file.getAbsolutePath());
             } catch (Exception e) {
+                logger.error("Error saving state: {}", e.getMessage());
                 showError("Ошибка", "Ошибка при сохранении: " + e.getMessage());
             }
         }
@@ -143,6 +124,8 @@ public class CalculatorApp extends Application {
 
     @FXML
     public void handleLoad() {
+        logger.info("Load state initiated by user");
+        
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Загрузить состояние");
         fileChooser.getExtensionFilters().add(
@@ -158,7 +141,9 @@ public class CalculatorApp extends Application {
                 calculator.getVariables().clear();
                 StateSerializer.restoreState(calculator.getStack(), calculator.getVariables(), state);
                 refreshViews();
+                logger.info("State loaded from {}", file.getAbsolutePath());
             } catch (Exception e) {
+                logger.error("Error loading state: {}", e.getMessage());
                 showError("Ошибка", "Ошибка при загрузке: " + e.getMessage());
             }
         }

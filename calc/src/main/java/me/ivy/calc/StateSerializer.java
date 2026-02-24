@@ -1,5 +1,10 @@
 package me.ivy.calc;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 public class StateSerializer {
+    private static final int MAGIC = 0x13371337;
+    private static final int VERSION = 1;
 
     public static class CalcState {
         public List<Double> stack;
@@ -21,24 +28,28 @@ public class StateSerializer {
     }
 
     public static void saveState(Stack stack, Variables variables, Path filePath) throws IOException {
-        StringBuilder content = new StringBuilder();
-
-        // Сохраняем стек
-        List<String> stackItems = stack.getDisplayItems();
-        for (String item : stackItems) {
-            content.append("STACK ").append(item).append("\n");
+        if (filePath.getParent() != null) {
+            Files.createDirectories(filePath.getParent());
         }
 
-        // Сохраняем переменные
-        List<String> varItems = variables.getDisplayItems();
-        for (String item : varItems) {
-            String[] parts = item.split(" = ");
-            if (parts.length == 2) {
-                content.append("VAR ").append(parts[0]).append(" ").append(parts[1]).append("\n");
+        try (DataOutputStream out = new DataOutputStream(
+                new BufferedOutputStream(Files.newOutputStream(filePath)))) {
+            out.writeInt(MAGIC);
+            out.writeInt(VERSION);
+
+            List<Double> stackValues = stack.getValues();
+            out.writeInt(stackValues.size());
+            for (Double value : stackValues) {
+                out.writeDouble(value);
+            }
+
+            Map<String, Double> vars = variables.asMap();
+            out.writeInt(vars.size());
+            for (Map.Entry<String, Double> entry : vars.entrySet()) {
+                out.writeUTF(entry.getKey());
+                out.writeDouble(entry.getValue());
             }
         }
-
-        Files.write(filePath, content.toString().getBytes());
     }
 
     public static CalcState loadState(Path filePath) throws IOException {
@@ -48,37 +59,45 @@ public class StateSerializer {
             return state;
         }
 
-        List<String> lines = Files.readAllLines(filePath);
-        for (String line : lines) {
-            line = line.trim();
-            if (line.startsWith("STACK ")) {
-                String value = line.substring(6);
-                try {
-                    state.stack.add(Double.parseDouble(value));
-                } catch (NumberFormatException e) {
-                    // Skip invalid entries
-                }
-            } else if (line.startsWith("VAR ")) {
-                String rest = line.substring(4);
-                String[] parts = rest.split(" ", 2);
-                if (parts.length == 2) {
-                    try {
-                        String name = parts[0];
-                        double value = Double.parseDouble(parts[1]);
-                        state.variables.put(name, value);
-                    } catch (NumberFormatException e) {
-                        // Skip invalid entries
-                    }
-                }
+        try (DataInputStream in = new DataInputStream(
+                new BufferedInputStream(Files.newInputStream(filePath)))) {
+            int magic = in.readInt();
+            if (magic != MAGIC) {
+                throw new IOException("Invalid state file format");
             }
+
+            int version = in.readInt();
+            if (version != VERSION) {
+                throw new IOException("Unsupported state file version: " + version);
+            }
+
+            int stackSize = in.readInt();
+            if (stackSize < 0) {
+                throw new IOException("Invalid stack size in state file");
+            }
+            for (int i = 0; i < stackSize; i++) {
+                state.stack.add(in.readDouble());
+            }
+
+            int varsSize = in.readInt();
+            if (varsSize < 0) {
+                throw new IOException("Invalid variables size in state file");
+            }
+            for (int i = 0; i < varsSize; i++) {
+                String name = in.readUTF();
+                double value = in.readDouble();
+                state.variables.put(name, value);
+            }
+        } catch (EOFException e) {
+            throw new IOException("Corrupted state file", e);
         }
 
         return state;
     }
 
     public static void restoreState(Stack stack, Variables variables, CalcState state) {
-        for (Double value : state.stack) {
-            stack.push(value);
+        for (int i = state.stack.size() - 1; i >= 0; i--) {
+            stack.push(state.stack.get(i));
         }
         for (Map.Entry<String, Double> entry : state.variables.entrySet()) {
             variables.define(entry.getKey(), entry.getValue());

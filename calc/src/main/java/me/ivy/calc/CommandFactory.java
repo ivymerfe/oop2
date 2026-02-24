@@ -1,5 +1,8 @@
 package me.ivy.calc;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,26 +24,40 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class CommandFactory {
+    private static final Logger logger = LogManager.getLogger(CommandFactory.class);
+
     private static final String CONFIG_RESOURCE = "command-jars.conf";
-    private final Map<String, Class<? extends Command>> commands = new HashMap<>();
+    private final Map<String, Command> commands = new HashMap<>();
 
     public CommandFactory() {
+        logger.info("Command factory initialization started");
         loadConfiguredCommands();
+        logger.info("Command factory loaded {} commands", commands.size());
     }
 
     public Command getCommand(String commandName) throws CommandException {
-        String cmd = commandName.toUpperCase(Locale.ROOT);
-        Class<? extends Command> commandClass = commands.get(cmd);
-        if (commandClass == null) {
+        String cmd = normalizeCommandName(commandName);
+        Command command = commands.get(cmd);
+        if (command == null) {
+            logger.warn("Unknown command requested: {}", commandName);
             throw new UnknownCommandException("Unknown command: " + commandName);
         }
-        return instantiate(commandClass, cmd);
+        logger.debug("Command resolved: {}", cmd);
+        return command;
+    }
+
+    public void registerCommand(String commandName, Command command) {
+        String normalized = normalizeCommandName(commandName);
+        commands.put(normalized, command);
+        logger.info("Command registered: {}", normalized);
     }
 
     private void loadConfiguredCommands() {
         List<String> jars = loadJarPathsFromConfig();
+        logger.info("Loading commands from {} configured jar entries", jars.size());
         for (String jarPath : jars) {
             List<Class<?>> discovered = loadCommandClassesFromJar(jarPath);
+            logger.info("Discovered {} command classes in {}", discovered.size(), jarPath);
             for (Class<?> type : discovered) {
                 registerAnnotatedCommand(type);
             }
@@ -64,6 +81,7 @@ public class CommandFactory {
                 }
             }
         } catch (IOException e) {
+            logger.error("Failed to read command config: {}", CONFIG_RESOURCE, e);
             throw new IllegalStateException("Cannot read command config: " + CONFIG_RESOURCE, e);
         }
         return jars;
@@ -75,6 +93,7 @@ public class CommandFactory {
             jarPath = Path.of(System.getProperty("user.dir")).resolve(jarPathLine);
         }
         if (!Files.exists(jarPath)) {
+            logger.warn("Command jar not found: {}", jarPath);
             return List.of();
         }
 
@@ -98,6 +117,7 @@ public class CommandFactory {
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
+            logger.error("Cannot load commands from jar: {}", jarPath, e);
             throw new IllegalStateException("Cannot load commands from jar: " + jarPath, e);
         }
         return classes;
@@ -107,7 +127,6 @@ public class CommandFactory {
         if (!Command.class.isAssignableFrom(rawClass)) {
             return;
         }
-
         @SuppressWarnings("unchecked")
         Class<? extends Command> commandClass = (Class<? extends Command>) rawClass;
         CommandName annotation = commandClass.getAnnotation(CommandName.class);
@@ -116,11 +135,17 @@ public class CommandFactory {
         }
 
         for (String name : annotation.value()) {
-            commands.put(name.toUpperCase(Locale.ROOT), commandClass);
+            String commandName = normalizeCommandName(name);
+            commands.put(commandName, createCommand(commandClass, commandName));
+            logger.info("Command registered: {} -> {}", commandName, commandClass.getSimpleName());
         }
     }
 
-    private Command instantiate(Class<? extends Command> commandClass, String commandName) throws CommandException {
+    private String normalizeCommandName(String commandName) {
+        return commandName.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private Command createCommand(Class<? extends Command> commandClass, String commandName) {
         try {
             Constructor<? extends Command> ctorWithName = commandClass.getConstructor(String.class);
             return ctorWithName.newInstance(commandName);
@@ -129,12 +154,15 @@ public class CommandFactory {
                 Constructor<? extends Command> ctor = commandClass.getConstructor();
                 return ctor.newInstance();
             } catch (NoSuchMethodException e) {
-                throw new CommandException("Command constructor not found: " + commandClass.getSimpleName(), e);
+                logger.error("Command constructor missing for {}", commandClass.getSimpleName(), e);
+                throw new IllegalStateException("Command constructor not found: " + commandClass.getSimpleName(), e);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new CommandException("Cannot instantiate command: " + commandClass.getSimpleName(), e);
+                logger.error("Cannot instantiate command {}", commandClass.getSimpleName(), e);
+                throw new IllegalStateException("Cannot instantiate command: " + commandClass.getSimpleName(), e);
             }
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            throw new CommandException("Cannot instantiate command: " + commandClass.getSimpleName(), e);
+            logger.error("Cannot instantiate command {}", commandClass.getSimpleName(), e);
+            throw new IllegalStateException("Cannot instantiate command: " + commandClass.getSimpleName(), e);
         }
     }
 }
