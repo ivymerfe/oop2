@@ -23,10 +23,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 5, time = 1)
-@Fork(value = 1, jvmArgsAppend = {
-    "-Dlog4j2.configurationFile=log4j2-benchmark.xml",
-    "-Dlog4j2.statusLoggerLevel=OFF"
-})
+@Fork(1)
 @State(Scope.Thread)
 public class CalculatorLoadBenchmark {
 

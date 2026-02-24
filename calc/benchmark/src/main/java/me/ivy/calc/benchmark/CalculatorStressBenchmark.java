@@ -24,10 +24,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 1)
 @Measurement(iterations = 3)
-@Fork(value = 1, jvmArgsAppend = {
-    "-Dlog4j2.configurationFile=log4j2-benchmark.xml",
-    "-Dlog4j2.statusLoggerLevel=OFF"
-})
+@Fork(1)
 @State(Scope.Benchmark)
 public class CalculatorStressBenchmark {
 
