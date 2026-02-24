@@ -23,18 +23,32 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+/**
+ * Factory and registry for calculator commands.
+ * Loads annotated command implementations from configured jar files and supports runtime registration.
+ */
 public class CommandFactory {
     private static final Logger logger = LogManager.getLogger(CommandFactory.class);
 
     private static final String CONFIG_RESOURCE = "command-jars.conf";
     private final Map<String, Command> commands = new HashMap<>();
 
+    /**
+     * Creates factory and loads configured commands.
+     */
     public CommandFactory() {
         logger.info("Command factory initialization started");
         loadConfiguredCommands();
         logger.info("Command factory loaded {} commands", commands.size());
     }
 
+    /**
+     * Returns command instance by name.
+     *
+     * @param commandName command token
+     * @return command instance
+     * @throws CommandException when command is unknown
+     */
     public Command getCommand(String commandName) throws CommandException {
         String cmd = normalizeCommandName(commandName);
         Command command = commands.get(cmd);
@@ -46,12 +60,21 @@ public class CommandFactory {
         return command;
     }
 
+    /**
+     * Registers custom command instance under command name.
+     *
+     * @param commandName command token
+     * @param command command instance
+     */
     public void registerCommand(String commandName, Command command) {
         String normalized = normalizeCommandName(commandName);
         commands.put(normalized, command);
         logger.info("Command registered: {}", normalized);
     }
 
+    /**
+     * Loads commands from jars listed in factory config resource.
+     */
     private void loadConfiguredCommands() {
         List<String> jars = loadJarPathsFromConfig();
         logger.info("Loading commands from {} configured jar entries", jars.size());
@@ -64,6 +87,11 @@ public class CommandFactory {
         }
     }
 
+    /**
+     * Reads configured jar paths from resource file.
+     *
+     * @return jar path entries
+     */
     private List<String> loadJarPathsFromConfig() {
         List<String> jars = new ArrayList<>();
         try (InputStream stream = CommandFactory.class.getResourceAsStream(CONFIG_RESOURCE)) {
@@ -87,6 +115,12 @@ public class CommandFactory {
         return jars;
     }
 
+    /**
+     * Scans one jar file and returns command classes with {@link CommandName} annotation.
+     *
+     * @param jarPathLine configured jar path
+     * @return discovered command classes
+     */
     private List<Class<?>> loadCommandClassesFromJar(String jarPathLine) {
         Path jarPath = Path.of(jarPathLine);
         if (!jarPath.isAbsolute()) {
@@ -123,6 +157,11 @@ public class CommandFactory {
         return classes;
     }
 
+    /**
+     * Registers command class for all names from its annotation.
+     *
+     * @param rawClass class to inspect
+     */
     private void registerAnnotatedCommand(Class<?> rawClass) {
         if (!Command.class.isAssignableFrom(rawClass)) {
             return;
@@ -141,10 +180,23 @@ public class CommandFactory {
         }
     }
 
+    /**
+     * Normalizes command token for stable key lookup.
+     *
+     * @param commandName raw command token
+     * @return normalized token
+     */
     private String normalizeCommandName(String commandName) {
         return commandName.trim().toUpperCase(Locale.ROOT);
     }
 
+    /**
+     * Creates command instance using constructor with command name or default constructor.
+     *
+     * @param commandClass command implementation class
+     * @param commandName normalized command name
+     * @return created command instance
+     */
     private Command createCommand(Class<? extends Command> commandClass, String commandName) {
         try {
             Constructor<? extends Command> ctorWithName = commandClass.getConstructor(String.class);

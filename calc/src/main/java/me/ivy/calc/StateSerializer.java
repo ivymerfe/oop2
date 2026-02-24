@@ -13,20 +13,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Binary serializer for calculator stack and variables state.
+ */
 public class StateSerializer {
     private static final int MAGIC = 0x13371337;
     private static final int VERSION = 1;
 
+    /**
+     * DTO with stack and variables snapshot.
+     */
     public static class CalcState {
         public List<Double> stack;
         public Map<String, Double> variables;
 
+        /**
+         * Creates empty state object.
+         */
         public CalcState() {
             this.stack = new ArrayList<>();
             this.variables = new HashMap<>();
         }
     }
 
+    /**
+     * Saves current calculator state in binary format.
+     *
+     * @param stack calculator stack
+     * @param variables calculator variables
+     * @param filePath target file path
+     * @throws IOException when write fails
+     */
     public static void saveState(Stack stack, Variables variables, Path filePath) throws IOException {
         if (filePath.getParent() != null) {
             Files.createDirectories(filePath.getParent());
@@ -52,6 +69,13 @@ public class StateSerializer {
         }
     }
 
+    /**
+     * Loads calculator state from binary file.
+     *
+     * @param filePath source file path
+     * @return loaded state, or empty state if file does not exist
+     * @throws IOException when read fails or format is invalid
+     */
     public static CalcState loadState(Path filePath) throws IOException {
         CalcState state = new CalcState();
 
@@ -95,6 +119,13 @@ public class StateSerializer {
         return state;
     }
 
+    /**
+     * Restores state into provided calculator storage objects.
+     *
+     * @param stack destination stack
+     * @param variables destination variables
+     * @param state source state
+     */
     public static void restoreState(Stack stack, Variables variables, CalcState state) {
         for (int i = state.stack.size() - 1; i >= 0; i--) {
             stack.push(state.stack.get(i));
