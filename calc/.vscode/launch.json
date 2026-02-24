@@ -6,8 +6,17 @@
             "type": "java",
             "name": "CalculatorApp",
             "request": "launch",
-            "mainClass": "me.ivy.calc_app/me.ivy.calc_app.CalculatorApp",
-            "projectName": "calc",
+            "mainClass": "me.ivy.calc.gui/me.ivy.calc_app.CalculatorApp",
+            "projectName": "gui",
+            "cwd": "${workspaceFolder}/gui"
+        },
+        {
+            "type": "java",
+            "name": "Benchmark",
+            "request": "launch",
+            "mainClass": "org.openjdk.jmh.Main",
+            "projectName": "benchmark",
+            "cwd": "${workspaceFolder}/benchmark"
         }
     ]
 }
