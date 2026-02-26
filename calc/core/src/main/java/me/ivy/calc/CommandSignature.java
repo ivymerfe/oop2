@@ -6,7 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface CommandName {
-    String value();
+@Target(ElementType.METHOD)
+public @interface CommandSignature {
+    int count();
+
+    ArgumentType[] types();
+
+    int requiredStackSize() default 0;
 }

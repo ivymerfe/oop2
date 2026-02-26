@@ -1,11 +1,8 @@
 package me.ivy.calc.benchmark;
 
-import me.ivy.basic_commands.DefineCommand;
-import me.ivy.basic_commands.PopCommand;
-import me.ivy.basic_commands.PushCommand;
-import me.ivy.basic_commands.SqrtCommand;
-import me.ivy.binary_commands.BinaryCommand;
 import me.ivy.calc.Calculator;
+import me.ivy.calc.CommandException;
+import me.ivy.calc.CommandFactory;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -43,22 +40,13 @@ public class CalculatorStressBenchmark {
     }
 
     @Benchmark
-    public String heavyBatchExecution() {
+    public void heavyBatchExecution() throws CommandException {
         Calculator calculator = createCalculatorWithCommands();
-        return calculator.execute(stressProgram);
+        calculator.execute(stressProgram);
     }
 
     private static Calculator createCalculatorWithCommands() {
-        Calculator calc = new Calculator();
-        calc.registerCommand("PUSH", new PushCommand());
-        calc.registerCommand("POP", new PopCommand());
-        calc.registerCommand("DEFINE", new DefineCommand());
-        calc.registerCommand("SQRT", new SqrtCommand());
-        calc.registerCommand("+", new BinaryCommand("+"));
-        calc.registerCommand("-", new BinaryCommand("-"));
-        calc.registerCommand("*", new BinaryCommand("*"));
-        calc.registerCommand("/", new BinaryCommand("/"));
-        return calc;
+        return new Calculator(new CommandFactory());
     }
 
     private static String buildStressProgram(int opCount) {

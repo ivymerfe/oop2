@@ -1,14 +1,22 @@
 package me.ivy.calc.test;
 
-import me.ivy.calc.*;
-import me.ivy.basic_commands.*;
-import me.ivy.binary_commands.BinaryCommand;
+import me.ivy.basic_commands.DefineCommand;
+import me.ivy.basic_commands.PopCommand;
+import me.ivy.basic_commands.PushCommand;
+import me.ivy.basic_commands.SqrtCommand;
+import me.ivy.binary_commands.AddCommand;
+import me.ivy.binary_commands.DivideCommand;
+import me.ivy.binary_commands.MultiplyCommand;
+import me.ivy.binary_commands.SubtractCommand;
+import me.ivy.calc.ExecutionContext;
+import me.ivy.calc.Stack;
+import me.ivy.calc.Variables;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CommandTest {
     private ExecutionContext ctx;
@@ -24,31 +32,31 @@ public class CommandTest {
 
     @Test
     void testPushCommand() throws Exception {
-        Command push = new PushCommand();
-        push.execute(ctx, List.of("10"));
+        PushCommand push = new PushCommand();
+        push.execute(ctx, 10.0);
         assertEquals(10.0, stack.pop());
     }
 
     @Test
     void testPopCommand() throws Exception {
         stack.push(7.0);
-        Command pop = new PopCommand();
-        pop.execute(ctx, List.of());
+        PopCommand pop = new PopCommand();
+        pop.execute(ctx);
         assertTrue(stack.isEmpty());
     }
 
     @Test
     void testDefineCommand() throws Exception {
-        Command define = new DefineCommand();
-        define.execute(ctx, List.of("a", "2.5"));
+        DefineCommand define = new DefineCommand();
+        define.execute(ctx, "a", 2.5);
         assertEquals(2.5, vars.asMap().get("a"));
     }
 
     @Test
     void testSqrtCommand() throws Exception {
         stack.push(16.0);
-        Command sqrt = new SqrtCommand();
-        sqrt.execute(ctx, List.of());
+        SqrtCommand sqrt = new SqrtCommand();
+        sqrt.execute(ctx);
         assertEquals(4.0, stack.pop());
     }
 
@@ -56,8 +64,8 @@ public class CommandTest {
     void testBinaryCommandAdd() throws Exception {
         stack.push(2.0);
         stack.push(3.0);
-        Command add = new BinaryCommand("+");
-        add.execute(ctx, List.of());
+        AddCommand add = new AddCommand();
+        add.execute(ctx);
         assertEquals(5.0, stack.pop());
     }
 
@@ -65,8 +73,8 @@ public class CommandTest {
     void testBinaryCommandDivByZero() {
         stack.push(1.0);
         stack.push(0.0);
-        Command div = new BinaryCommand("/");
-        Exception ex = assertThrows(Exception.class, () -> div.execute(ctx, List.of()));
+        DivideCommand div = new DivideCommand();
+        Exception ex = assertThrows(Exception.class, () -> div.execute(ctx));
         assertTrue(ex.getMessage().toLowerCase().contains("zero"));
         assertEquals(0.0, stack.pop());
         assertEquals(1.0, stack.pop());
@@ -75,50 +83,36 @@ public class CommandTest {
     @Test
     void testPushCommandWithVariableToken() throws Exception {
         vars.asMap().put("n", 42.0);
-        Command push = new PushCommand();
+        PushCommand push = new PushCommand();
 
-        push.execute(ctx, List.of("n"));
+        push.execute(ctx, "n");
 
         assertEquals(42.0, stack.pop());
     }
 
     @Test
-    void testPushCommandMissingArgument() {
-        Command push = new PushCommand();
-        Exception ex = assertThrows(Exception.class, () -> push.execute(ctx, List.of()));
-        assertTrue(ex.getMessage().contains("Expected argument"));
-    }
-
-    @Test
     void testDefineCommandFromVariableReference() throws Exception {
         vars.asMap().put("a", 5.5);
-        Command define = new DefineCommand();
+        DefineCommand define = new DefineCommand();
 
-        define.execute(ctx, List.of("b", "a"));
+        define.execute(ctx, "b", "a");
 
         assertEquals(5.5, vars.asMap().get("b"));
     }
 
     @Test
-    void testDefineCommandMissingValue() {
-        Command define = new DefineCommand();
-        Exception ex = assertThrows(Exception.class, () -> define.execute(ctx, List.of("x")));
-        assertTrue(ex.getMessage().contains("Expected argument"));
-    }
-
-    @Test
     void testPopCommandOnEmptyStack() {
-        Command pop = new PopCommand();
-        Exception ex = assertThrows(Exception.class, () -> pop.execute(ctx, List.of()));
-        assertTrue(ex.getMessage().contains("empty stack"));
+        PopCommand pop = new PopCommand();
+        Exception ex = assertThrows(Exception.class, () -> pop.execute(ctx));
+        assertTrue(ex.getMessage().toLowerCase().contains("empty"));
     }
 
     @Test
     void testSqrtCommandNegativeValue() {
         stack.push(-4.0);
-        Command sqrt = new SqrtCommand();
+        SqrtCommand sqrt = new SqrtCommand();
 
-        Exception ex = assertThrows(Exception.class, () -> sqrt.execute(ctx, List.of()));
+        Exception ex = assertThrows(Exception.class, () -> sqrt.execute(ctx));
 
         assertTrue(ex.getMessage().toLowerCase().contains("negative"));
         assertEquals(-4.0, stack.pop());
@@ -128,9 +122,9 @@ public class CommandTest {
     void testBinarySubtraction() throws Exception {
         stack.push(10.0);
         stack.push(3.0);
-        Command sub = new BinaryCommand("-");
+        SubtractCommand sub = new SubtractCommand();
 
-        sub.execute(ctx, List.of());
+        sub.execute(ctx);
 
         assertEquals(7.0, stack.pop());
     }
@@ -139,9 +133,9 @@ public class CommandTest {
     void testBinaryMultiplication() throws Exception {
         stack.push(2.5);
         stack.push(4.0);
-        Command mul = new BinaryCommand("*");
+        MultiplyCommand mul = new MultiplyCommand();
 
-        mul.execute(ctx, List.of());
+        mul.execute(ctx);
 
         assertEquals(10.0, stack.pop());
     }
@@ -149,10 +143,10 @@ public class CommandTest {
     @Test
     void testBinaryNotEnoughValues() {
         stack.push(1.0);
-        Command add = new BinaryCommand("+");
+        AddCommand add = new AddCommand();
 
-        Exception ex = assertThrows(Exception.class, () -> add.execute(ctx, List.of()));
+        Exception ex = assertThrows(Exception.class, () -> add.execute(ctx));
 
-        assertTrue(ex.getMessage().contains("Not enough values"));
+        assertTrue(ex.getMessage().toLowerCase().contains("empty"));
     }
 }

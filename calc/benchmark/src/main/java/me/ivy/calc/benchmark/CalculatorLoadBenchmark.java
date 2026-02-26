@@ -1,11 +1,8 @@
 package me.ivy.calc.benchmark;
 
-import me.ivy.basic_commands.DefineCommand;
-import me.ivy.basic_commands.PopCommand;
-import me.ivy.basic_commands.PushCommand;
-import me.ivy.basic_commands.SqrtCommand;
-import me.ivy.binary_commands.BinaryCommand;
 import me.ivy.calc.Calculator;
+import me.ivy.calc.CommandException;
+import me.ivy.calc.CommandFactory;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -43,37 +40,28 @@ public class CalculatorLoadBenchmark {
     }
 
     @Benchmark
-    public String shortExpressionProgram() {
-        return calculator.execute("PUSH 10; PUSH 20; +; PUSH 2; /; PUSH 3; *");
+    public void shortExpressionProgram() throws CommandException {
+        calculator.execute("PUSH 10; PUSH 20; +; PUSH 2; /; PUSH 3; *");
     }
 
     @Benchmark
-    public String programmaticCommandCalls() {
+    public void programmaticCommandCalls() throws CommandException {
         calculator.executeCommand("PUSH", "10");
         calculator.executeCommand("PUSH", "20");
         calculator.executeCommand("+");
         calculator.executeCommand("PUSH", "2");
         calculator.executeCommand("/");
         calculator.executeCommand("PUSH", "3");
-        return calculator.executeCommand("*");
+        calculator.executeCommand("*");
     }
 
     @Benchmark
-    public String longProgramBatch() {
-        return calculator.execute(longProgram);
+    public void longProgramBatch() throws CommandException {
+        calculator.execute(longProgram);
     }
 
     private static Calculator createCalculatorWithCommands() {
-        Calculator calc = new Calculator();
-        calc.registerCommand("PUSH", new PushCommand());
-        calc.registerCommand("POP", new PopCommand());
-        calc.registerCommand("DEFINE", new DefineCommand());
-        calc.registerCommand("SQRT", new SqrtCommand());
-        calc.registerCommand("+", new BinaryCommand("+"));
-        calc.registerCommand("-", new BinaryCommand("-"));
-        calc.registerCommand("*", new BinaryCommand("*"));
-        calc.registerCommand("/", new BinaryCommand("/"));
-        return calc;
+        return new Calculator(new CommandFactory());
     }
 
     private static String buildLongProgram(int operations) {

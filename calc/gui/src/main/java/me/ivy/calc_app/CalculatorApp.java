@@ -17,6 +17,7 @@ import javafx.scene.Parent;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import me.ivy.calc.Calculator;
+import me.ivy.calc.CommandFactory;
 import me.ivy.calc.StateSerializer;
 
 import java.io.File;
@@ -26,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 public class CalculatorApp extends Application {
     private static final Logger logger = LogManager.getLogger(CalculatorApp.class);
-    private static final Calculator calculator = new Calculator();
+    private static final Calculator calculator = new Calculator(new CommandFactory());
 
     private Stage primaryStage;
 
@@ -77,11 +78,12 @@ public class CalculatorApp extends Application {
             if (!userInput.isEmpty()) {
                 StringBuilder history = new StringBuilder(userInput);
                 history.append("\n......\n");
-                String output = calculator.execute(userInput);
-                if (!output.isEmpty()) {
-                    history.append(output);
-                } else {
+                try {
+                    calculator.execute(userInput);
                     history.append("ok");
+                } catch (Exception e) {
+                    logger.warn("Command execution error: {}", e.getMessage());
+                    history.append("Error: ").append(e.getMessage());
                 }
                 history.append("\n-----\n");
 

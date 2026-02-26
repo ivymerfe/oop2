@@ -3,13 +3,12 @@ package me.ivy.calc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
-/**
- * Main calculator facade for text program execution and programmatic command control.
- */
 public class Calculator {
     private static final Logger logger = LogManager.getLogger(Calculator.class);
 
@@ -17,163 +16,104 @@ public class Calculator {
     private final Variables variables;
     private final ExecutionContext context;
     private final CommandFactory factory;
+    private final CommandParser parser;
+    private final Map<String, Command> initializedCommands;
 
-    /**
-     * Creates calculator with empty stack and variables.
-     */
-    public Calculator() {
+    public Calculator(CommandFactory factory) {
         this.stack = new Stack();
         this.variables = new Variables();
         this.context = new ExecutionContext(stack, variables.asMap());
-        this.factory = new CommandFactory();
-        logger.info("Calculator initialized");
+        this.factory = factory;
+        this.parser = new CommandParser();
+        this.initializedCommands = new HashMap<>();
+        initializeRegisteredCommands();
+        logger.info("Calculator initialized with {} command instances", initializedCommands.size());
     }
 
-    /**
-     * Executes command program text.
-     * Supports comments after '#' and command separators ';'.
-     *
-     * @param program multiline program text
-     * @return collected output lines or error lines
-     */
-    public String execute(String program) {
-        StringBuilder output = new StringBuilder();
-        if (program == null) {
-            logger.warn("Program input is null");
-            return "";
+    public void execute(String program) throws CommandException {
+        List<CommandParser.ParsedCommand> parsed = parser.parseProgram(program, factory);
+        for (CommandParser.ParsedCommand parsedCommand : parsed) {
+            executeParsedCommand(parsedCommand);
         }
-        int expressionCount = 0;
-        for (String line : program.split("\n")) {
-            String trimmed = stripComment(line).trim();
-            if (trimmed.isEmpty()) {
-                continue;
-            }
-            for (String chunk : trimmed.split(";")) {
-                String expr = chunk.trim();
-                if (expr.isEmpty()) {
-                    continue;
-                }
-                expressionCount++;
-                String result = executeExpression(expr);
-                if (!result.isEmpty()) {
-                    if (output.length() > 0) {
-                        output.append("\n");
-                    }
-                    output.append(result);
-                }
-            }
-        }
-        logger.info("Executed {} expressions", expressionCount);
-        return output.toString();
     }
 
-    /**
-     * Removes trailing comment from a line.
-     *
-     * @param line source line
-     * @return line without comment part
-     */
-    private String stripComment(String line) {
-        int idx = line.indexOf('#');
-        if (idx < 0) {
-            return line;
-        }
-        return line.substring(0, idx);
+    public void registerCommand(String commandName, Class<? extends Command> commandClass) {
+        factory.registerCommand(commandName, commandClass);
+        initializedCommands.put(normalizeCommandName(commandName), instantiateCommand(commandClass));
     }
 
-    /**
-     * Executes one command expression string.
-     *
-     * @param expr expression like "PUSH 10"
-     * @return command output or error line
-     */
-    private String executeExpression(String expr) {
-        String[] tokens = expr.trim().split("\\s+");
-        if (tokens.length == 0) {
-            return "";
-        }
-        String commandName = tokens[0];
-        List<Object> args = new ArrayList<>();
-        for (int i = 1; i < tokens.length; i++) {
-            args.add(tokens[i]);
+    public void executeCommand(String commandName, String... args) throws CommandException {
+        String expression = commandName;
+        for (String arg : args) {
+            expression += " " + arg;
         }
 
-        return executeCommand(commandName, args);
-    }
-
-    /**
-     * Registers custom command instance under command name.
-     *
-     * @param commandName command token
-     * @param command command instance
-     */
-    public void registerCommand(String commandName, Command command) {
-        factory.registerCommand(commandName, command);
-        logger.info("Custom command registered: {}", commandName);
-    }
-
-    /**
-     * Executes command by name with vararg arguments.
-     *
-     * @param commandName command token
-     * @param args command arguments
-     * @return command output or error line
-     */
-    public String executeCommand(String commandName, Object... args) {
-        return executeCommand(commandName, new ArrayList<>(Arrays.asList(args)));
-    }
-
-    /**
-     * Executes command by name with argument list.
-     *
-     * @param commandName command token
-     * @param args command arguments
-     * @return command output or error line
-     */
-    public String executeCommand(String commandName, List<Object> args) {
         try {
-            Command cmd = factory.getCommand(commandName);
-            String result = cmd.execute(context, args);
-            return result;
+            CommandParser.ParsedCommand parsed = parser.parseExpression(expression, factory);
+            executeParsedCommand(parsed);
         } catch (CommandException e) {
-            logger.warn("Command failed: {}. Error: {}", commandName, e.getMessage());
-            return "ERR " + e.getMessage();
+            logger.warn("Command execution failed: {}. Error: {}", commandName, e.getMessage());
+            throw e;
         }
     }
 
-    /**
-     * Returns stack values as strings for UI.
-     *
-     * @return stack items
-     */
     public List<String> getStackItems() {
         return stack.getDisplayItems();
     }
 
-    /**
-     * Returns variable items as strings for UI.
-     *
-     * @return variable items
-     */
     public List<String> getVariableItems() {
         return variables.getDisplayItems();
     }
 
-    /**
-     * Returns underlying stack object.
-     *
-     * @return stack
-     */
     public Stack getStack() {
         return stack;
     }
 
-    /**
-     * Returns underlying variables object.
-     *
-     * @return variables
-     */
     public Variables getVariables() {
         return variables;
+    }
+
+    private void initializeRegisteredCommands() {
+        for (Map.Entry<String, Class<? extends Command>> entry : factory.getRegisteredCommandClasses().entrySet()) {
+            initializedCommands.put(entry.getKey(), instantiateCommand(entry.getValue()));
+        }
+    }
+
+    private Command instantiateCommand(Class<? extends Command> commandClass) {
+        try {
+            return commandClass.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Cannot instantiate command: " + commandClass.getSimpleName(), e);
+        }
+    }
+
+    private void executeParsedCommand(CommandParser.ParsedCommand parsed) throws CommandException {
+        String commandName = parsed.commandName();
+        Command command = initializedCommands.get(commandName);
+        if (command == null) {
+            throw new UnknownCommandException("Unknown command: " + commandName);
+        }
+        if (stack.size() < parsed.requiredStackSize()) {
+            throw new CommandArgumentsException("Not enough values on stack for " + commandName);
+        }
+
+        try {
+            Object[] invokeArgs = new Object[parsed.typedArguments().length + 1];
+            invokeArgs[0] = context;
+            System.arraycopy(parsed.typedArguments(), 0, invokeArgs, 1, parsed.typedArguments().length);
+            parsed.executeMethod().invoke(command, invokeArgs);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("Cannot access execute method for command " + commandName, e);
+        } catch (InvocationTargetException e) {
+            Throwable target = e.getTargetException();
+            if (target instanceof CommandException commandException) {
+                throw commandException;
+            }
+            throw new IllegalStateException("Unexpected command failure for " + commandName, target);
+        }
+    }
+
+    private String normalizeCommandName(String commandName) {
+        return commandName.trim().toUpperCase(Locale.ROOT);
     }
 }
