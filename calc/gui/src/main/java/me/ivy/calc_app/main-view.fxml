@@ -36,7 +36,7 @@
                 </header>
                 <body>
                     <HBox spacing="5" VBox.vgrow="ALWAYS">
-                        <TextArea fx:id="inputArea" wrapText="true" promptText="Введи программу...&#10;Alt+Enter для выполнения" HBox.hgrow="ALWAYS"/>
+                        <TextArea fx:id="inputArea" wrapText="true" promptText="Введи программу...&#10;Ctrl+Enter для выполнения" HBox.hgrow="ALWAYS"/>
                         <TextArea fx:id="historyArea" wrapText="true" editable="false" HBox.hgrow="ALWAYS"/>
                     </HBox>
                 </body>

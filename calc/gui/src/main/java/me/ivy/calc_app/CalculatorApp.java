@@ -58,6 +58,7 @@ public class CalculatorApp extends Application {
         scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 
         stage.setScene(scene);
+        stage.setTitle("Calculator");
         stage.show();
         logger.info("Calculator application started");
     }
@@ -71,7 +72,7 @@ public class CalculatorApp extends Application {
     }
 
     private void handleInputKey(KeyEvent event) {
-        if (event.getCode() == KeyCode.ENTER && event.isAltDown()) {
+        if (event.getCode() == KeyCode.ENTER && event.isControlDown()) {
             event.consume();
             String userInput = inputArea.getText().trim();
 
@@ -157,9 +158,5 @@ public class CalculatorApp extends Application {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }
