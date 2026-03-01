@@ -1,17 +1,15 @@
 package me.ivy.game.model;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.*;
 
 public class Player {
     public float width = 1;
     public float height = 1.5f;
-    public float speed = 3;
+    public float speed = 6;
 
     public float direction = 1;
+    public int contacts = 0;
 
     public final World world;
     public Body body;
@@ -28,7 +26,9 @@ public class Player {
     }
 
     public void jump() {
-        body.applyLinearImpulse(new Vector2(0, 30f), body.getWorldCenter(), true);
+        if (contacts > 0) {
+            body.applyLinearImpulse(new Vector2(0, 60f), body.getWorldCenter(), true);
+        }
     }
 
     private void createBody(float x, float y) {
@@ -40,7 +40,17 @@ public class Player {
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(width, height);
-        body.createFixture(shape, 1.0f);
+
+        FixtureDef fdef = new FixtureDef();
+        fdef.shape = shape;
+
+        fdef.friction = 0.7f;
+        fdef.density = 1.0f;
+        fdef.restitution = 0;
+
+        Fixture fix = body.createFixture(fdef);
+        fix.setUserData(Registry.Player);
+
         shape.dispose();
 
         this.body = body;
