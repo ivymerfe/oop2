@@ -11,13 +11,13 @@ public class PlayerRenderer {
         texture = new Texture("player.png");
     }
 
-    public void draw(SpriteBatch batch, Player player) {
-        float x = (player.body.getPosition().x - player.width);
-        float y = (player.body.getPosition().y - player.height);
+    public void render(SpriteBatch batch, Player player) {
+        float x = (player.body.getPosition().x - player.width / 2);
+        float y = (player.body.getPosition().y - player.height / 2);
 
         float u1 = 1;
         float u2 = 0;
-        if (player.direction < 0) {
+        if (player.lookDirection < 0) {
             u1 = 0;
             u2 = 1;
         }

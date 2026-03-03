@@ -23,7 +23,7 @@ public class Ground {
         FixtureDef fdef = new FixtureDef();
         fdef.shape = shape;
 
-        fdef.friction = 0.7f;
+        fdef.friction = 0.2f;
         fdef.density = 0.0f;
         fdef.restitution = 0;
 

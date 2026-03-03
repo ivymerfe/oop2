@@ -2,35 +2,48 @@ package me.ivy.game.controller;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.math.Vector3;
 import me.ivy.game.Labgame;
-import me.ivy.game.model.Ground;
 import me.ivy.game.model.Player;
 
 public class InputController {
+    public static final float PLACE_CD = 0.4f;
+
     private Labgame game;
+
+    private float lastPlaceTime = 0;
 
     public InputController(Labgame game) {
         this.game = game;
     }
 
     public void update(float delta) {
-        game.getWorld().step(delta, 6, 2);
+        Player player = game.getPlayer();
 
-        // Ввод
         float direction = 0;
-        if (Gdx.input.isKeyPressed(Input.Keys.D))  {
+        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             direction += 1;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             direction -= 1;
         }
+        player.movement = direction;
         if (direction != 0) {
-            game.getPlayer().move(direction);
+            player.lookDirection = direction;
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            game.getPlayer().jump();
+        player.jumping = Gdx.input.isKeyPressed(Input.Keys.SPACE);
+
+
+        if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+            Vector3 point = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+            game.getCamera().unproject(point);
+
+            float time = game.getTime();
+            if (time - lastPlaceTime > PLACE_CD) {
+                game.getBlocks().create(point.x, point.y);
+
+                lastPlaceTime = time;
+            }
         }
     }
 }
