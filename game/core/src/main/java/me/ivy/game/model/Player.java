@@ -6,7 +6,7 @@ import com.badlogic.gdx.physics.box2d.*;
 public class Player {
     public float width = 1;
     public float height = 1.5f;
-    public float max_speed = 7;
+    public float max_speed = 8;
 
     public float lookDirection = 1;
     public float movement = 0;
@@ -29,14 +29,11 @@ public class Player {
         Vector2 vel = body.getLinearVelocity();
         float forceX = 0;
         float forceY = 0;
-        if (Math.abs(vel.x) < max_speed) {
+        boolean sameDirection = movement != 0 && Math.signum(movement) == Math.signum(vel.x);
+        if (Math.abs(vel.x) < max_speed && sameDirection) {
             forceX = 80*movement;
-            if (Math.signum(movement) != Math.signum(vel.x)) {
-                forceX *= 4;
-            }
-            if (movement == 0) {
-                forceX = -50 * Math.signum(vel.x);
-            }
+        } else {
+            forceX = 60 * movement - 50 * Math.signum(vel.x);
         }
         if (jumping) {
             if (footContacts > 0) {
@@ -70,7 +67,7 @@ public class Player {
         shape.dispose();
 
         PolygonShape sensorShape = new PolygonShape();
-        sensorShape.setAsBox(width / 2.5f, 0.05f, new Vector2(0, -width / 2 - 0.2f), 0);
+        sensorShape.setAsBox(width / 2.5f, 0.05f, new Vector2(0, -width / 2 - 0.25f), 0);
 
         FixtureDef sdef = new FixtureDef();
         sdef.shape = sensorShape;
