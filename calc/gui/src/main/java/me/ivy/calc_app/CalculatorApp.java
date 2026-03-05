@@ -79,9 +79,11 @@ public class CalculatorApp extends Application {
             if (!userInput.isEmpty()) {
                 StringBuilder history = new StringBuilder(userInput);
                 history.append("\n......\n");
+                boolean ok = false;
                 try {
                     calculator.execute(userInput);
                     history.append("ok");
+                    ok = true;
                 } catch (Exception e) {
                     logger.warn("Command execution error: {}", e.getMessage());
                     history.append("Error: ").append(e.getMessage());
@@ -90,7 +92,9 @@ public class CalculatorApp extends Application {
 
                 historyArea.appendText(history.toString());
                 historyArea.setScrollTop(Double.MAX_VALUE);
-                inputArea.clear();
+                if (ok) {
+                    inputArea.clear();
+                }
                 refreshViews();
             }
         }
@@ -108,7 +112,7 @@ public class CalculatorApp extends Application {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Сохранить состояние");
         fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("State Files (*.calc)", "*.calc")
+                new FileChooser.ExtensionFilter("State Files (*.calc)", "*.calc")
         );
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
         fileChooser.setInitialFileName("calculator.calc");
@@ -128,11 +132,11 @@ public class CalculatorApp extends Application {
     @FXML
     public void handleLoad() {
         logger.info("Load state initiated by user");
-        
+
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Загрузить состояние");
         fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("State Files (*.calc)", "*.calc")
+                new FileChooser.ExtensionFilter("State Files (*.calc)", "*.calc")
         );
         fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
 
