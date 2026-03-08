@@ -5,47 +5,28 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/resources/brick_square.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../calc/gui/src/main/java/me/ivy/calc_app/CalculatorApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/../calc/gui/src/main/java/me/ivy/calc_app/CalculatorApp.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.editorconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/ground.jpg" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/ground.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/libgdx.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/player.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/player.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/sky.png" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/sky.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/GameController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/ExplosionRenderer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/IRenderer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/BodyHelper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Effect.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Sensors.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/tui/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/build.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/java/me/ivy/game/Labgame.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/java/me/ivy/game/controller/InputController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/java/me/ivy/game/controller/WorldController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/java/me/ivy/game/model/Blocks.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/java/me/ivy/game/model/Ground.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/java/me/ivy/game/model/Player.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/java/me/ivy/game/model/Registry.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/java/me/ivy/game/view/BlockRenderer.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/java/me/ivy/game/view/GameRenderer.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/core/src/main/java/me/ivy/game/view/PlayerRenderer.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/gradle-daemon-jvm.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradlew.bat" beforeDir="false" afterPath="$PROJECT_DIR$/gradlew.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/build.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/icons/logo.icns" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/icons/logo.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/icons/logo.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/nativeimage.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/src/main/java/me/ivy/game/lwjgl3/Lwjgl3Launcher.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/src/main/java/me/ivy/game/lwjgl3/StartupHelper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/src/main/resources/libgdx128.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/src/main/resources/libgdx16.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/src/main/resources/libgdx32.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lwjgl3/src/main/resources/libgdx64.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/InputController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/InputController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/WorldController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/BlockRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/BlockRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/GameRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/GameRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/PlayerRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/PlayerRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Blocks.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Bullets.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Components.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Ground.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Ground.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Player.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Player.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Registry.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,6 +55,14 @@
       </state>
     </system>
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
@@ -85,31 +74,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Game.executor&quot;: &quot;Run&quot;,
-    &quot;Application.Unnamed.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build game.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.game [:labs.labgame.gui.Main.main()].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;onboarding.tips.debug.path&quot;: &quot;/home/ivy/projects/oop/game/src/main/java/org/example/Main.java&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Game.executor": "Run",
+    "Application.Unnamed.executor": "Run",
+    "Gradle.Build game.executor": "Run",
+    "Gradle.Download Sources.executor": "Run",
+    "Gradle.game [:labs.labgame.gui.Main.main()].executor": "Debug",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/ivy/projects/oop2/game",
+    "onboarding.tips.debug.path": "/home/ivy/projects/oop/game/src/main/java/org/example/Main.java",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "preferences.keymap"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/java/labs/labgame/gui" />
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="Game" type="Application" factoryName="Application">
+    <configuration name="Game" type="Application" factoryName="Application" show_console_on_std_err="true" show_console_on_std_out="true">
       <option name="ALTERNATIVE_JRE_PATH" value="25" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="MAIN_CLASS_NAME" value="labs.labgame.gui.Main" />
@@ -135,5 +126,20 @@
       <updated>1772685888338</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

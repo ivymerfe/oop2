@@ -1,21 +1,20 @@
 package labs.labgame.gui;
 
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import labs.labgame.controller.InputController;
-import labs.labgame.controller.WorldController;
+import labs.labgame.controller.GameController;
 import labs.labgame.model.GameModel;
 
 public class Main extends ApplicationAdapter {
     private GameModel model;
     private OrthographicCamera camera;
 
-    private InputController input;
-    private WorldController worldController;
+    private InputController inputController;
+    private GameController gameController;
     private GameRenderer renderer;
 
     @Override
@@ -26,16 +25,15 @@ public class Main extends ApplicationAdapter {
         camera.setToOrtho(false, 32, 18);
 
         renderer = new GameRenderer(model, camera);
-        input = new InputController(model, camera);
-        worldController = new WorldController(model, camera);
+        inputController = new InputController(model, camera);
+        gameController = new GameController(model, camera);
     }
 
     @Override
     public void render() {
-        float delta = Gdx.graphics.getDeltaTime();
-
-        input.update(delta);
-        worldController.update(delta);
+        float delta = 1f/60;
+        inputController.update(delta);
+        gameController.update(delta);
         renderer.render();
     }
 
@@ -46,9 +44,6 @@ public class Main extends ApplicationAdapter {
     }
 
     public static void main(String[] args) {
-        Lwjgl3ApplicationConfiguration config =    new Lwjgl3ApplicationConfiguration();
-        config.setTitle("labgame");
-        config.setWindowedMode(800, 600);
-        new Lwjgl3Application(new Main(), config);
+        new Lwjgl3Application(new Main(), new Lwjgl3ApplicationConfiguration());
     }
 }

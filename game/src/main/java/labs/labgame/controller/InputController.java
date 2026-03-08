@@ -3,13 +3,14 @@ package labs.labgame.controller;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import labs.labgame.model.GameModel;
 import labs.labgame.model.Player;
 
 public class InputController {
-    private static final float ATTACK_CD = 0.4f;
-    private static final float PLACE_CD = 0.4f;
+    private static final float ATTACK_CD = 0.25f;
+    private static final float PLACE_CD = 0.1f;
 
     private final GameModel model;
     private final Camera camera;
@@ -41,11 +42,16 @@ public class InputController {
 
         float time = model.getTime();
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && time - lastAttackTime > ATTACK_CD) {
+            Vector2 pos = player.getPosition();
+            Vector2 bulletPos = pos.cpy().sub(point.x, point.y).nor().scl(-1.5f).add(pos);
+            if (bulletPos.y < 0) bulletPos.y = 0;
+
+            model.addBullet(player, bulletPos, new Vector2(point.x, point.y), player.getBody().getLinearVelocity());
             lastAttackTime = time;
         }
 
         if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && time - lastPlaceTime > PLACE_CD) {
-            model.getBlocks().create(point.x, point.y);
+            model.addBlock(point.x, Math.max(1, point.y));
             lastPlaceTime = time;
         }
     }

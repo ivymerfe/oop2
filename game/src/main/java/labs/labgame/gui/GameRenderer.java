@@ -5,9 +5,10 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
-import labs.labgame.model.GameModel;
+import labs.labgame.model.*;
 
 public class GameRenderer implements Disposable {
     private final GameModel model;
@@ -20,6 +21,11 @@ public class GameRenderer implements Disposable {
 
     private final PlayerRenderer playerRenderer;
     private final BlockRenderer blockRenderer;
+    private final EnemyRenderer enemyRenderer;
+    private final BulletRenderer bulletRenderer;
+    private final ExplosionRenderer explosionRenderer;
+    private final HudRenderer hudRenderer;
+    private final Matrix4 hudProjection;
 
     public GameRenderer(GameModel model, Camera camera) {
         this.model = model;
@@ -34,6 +40,11 @@ public class GameRenderer implements Disposable {
 
         playerRenderer = new PlayerRenderer();
         blockRenderer = new BlockRenderer();
+        enemyRenderer = new EnemyRenderer();
+        bulletRenderer = new BulletRenderer();
+        explosionRenderer = new ExplosionRenderer();
+        hudRenderer = new HudRenderer();
+        hudProjection = new Matrix4();
     }
 
     public void render() {
@@ -50,9 +61,23 @@ public class GameRenderer implements Disposable {
         float groundOffset = pos.x * -0.02f;
         batch.draw(groundTexture, pos.x - 16, pos.y - 9, 32, 4, groundOffset, 1, groundOffset - 1, 0);
 
-        playerRenderer.render(batch, model.getPlayer());
-        blockRenderer.render(batch, model.getBlocks());
+        for (Entity entity : model.getEntities().values()) {
+            if (entity instanceof Block b) blockRenderer.render(batch, b);
+            else if (entity instanceof Enemy e) enemyRenderer.render(batch, e);
+            else if (entity instanceof Bullet b) bulletRenderer.render(batch, b);
+            else if (entity instanceof Player p) playerRenderer.render(batch, p);
+        }
 
+        for (Effect effect : model.getEffects()) {
+            if (effect instanceof ExplosionEffect e) explosionRenderer.render(batch, e);
+        }
+
+        batch.end();
+
+        hudProjection.setToOrtho2D(0.0f, 0.0f, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.setProjectionMatrix(hudProjection);
+        batch.begin();
+        hudRenderer.render(batch, model.getPlayer());
         batch.end();
     }
 
@@ -63,5 +88,9 @@ public class GameRenderer implements Disposable {
         groundTexture.dispose();
         playerRenderer.dispose();
         blockRenderer.dispose();
+        enemyRenderer.dispose();
+        bulletRenderer.dispose();
+        explosionRenderer.dispose();
+        hudRenderer.dispose();
     }
 }

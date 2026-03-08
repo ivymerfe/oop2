@@ -4,24 +4,21 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.EdgeShape;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 
-public class Ground {
-    private final Body body;
-
+public class Ground extends Entity {
     public Ground(World world) {
-        this.body = createBody(world);
+        super(createGroundBody(world));
     }
 
-    private Body createBody(World world) {
+    private static Body createGroundBody(World world) {
         BodyDef bdef = new BodyDef();
         bdef.position.set(0, 0);
         Body staticBody = world.createBody(bdef);
 
         EdgeShape shape = new EdgeShape();
-        shape.set(new Vector2(-100, 0), new Vector2(100, 0));
+        shape.set(new Vector2(-100, 0), new Vector2(1000, 0));
 
         FixtureDef fdef = new FixtureDef();
         fdef.shape = shape;
@@ -29,13 +26,28 @@ public class Ground {
         fdef.density = 0.0f;
         fdef.restitution = 0.0f;
 
-        Fixture fixture = staticBody.createFixture(fdef);
-        fixture.setUserData(Registry.Ground);
+        staticBody.createFixture(fdef);
         shape.dispose();
         return staticBody;
     }
 
-    public Body getBody() {
-        return body;
+    @Override
+    public void update(float delta) {
+
+    }
+
+    @Override
+    public void damage(float amount) {
+
+    }
+
+    @Override
+    public void onCollisionEnter(Entity other, Object myFixtureData) {
+
+    }
+
+    @Override
+    public void onCollisionExit(Entity other, Object myFixtureData) {
+
     }
 }

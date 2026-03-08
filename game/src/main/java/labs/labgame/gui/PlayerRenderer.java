@@ -2,11 +2,10 @@ package labs.labgame.gui;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.Disposable;
 
 import labs.labgame.model.Player;
 
-public class PlayerRenderer implements Disposable {
+public class PlayerRenderer implements IRenderer {
     private final Texture texture;
 
     public PlayerRenderer() {
