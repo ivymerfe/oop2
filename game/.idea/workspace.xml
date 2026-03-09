@@ -4,19 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="first playable version">
+    <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="serialization impl">
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/SoundManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/SoundEffect.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/HudRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/HudRenderer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Block.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Block.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Bullet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Bullet.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Enemy.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/EnemySpawner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/EnemySpawner.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Entity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Ground.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Ground.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Player.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Player.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Sensors.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Sensors.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -135,7 +128,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772990814898</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="serialization impl">
+      <option name="closed" value="true" />
+      <created>1773037456725</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1773037456725</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -151,7 +152,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first playable version" />
-    <option name="LAST_COMMIT_MESSAGE" value="first playable version" />
+    <MESSAGE value="serialization impl" />
+    <option name="LAST_COMMIT_MESSAGE" value="serialization impl" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

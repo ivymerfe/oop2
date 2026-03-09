@@ -24,6 +24,7 @@ public class Main extends ApplicationAdapter {
     private InputController inputController;
     private GameController gameController;
     private GameRenderer renderer;
+    private SoundManager soundManager;
 
     @Override
     public void create() {
@@ -32,9 +33,10 @@ public class Main extends ApplicationAdapter {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 32, 18);
 
-        renderer = new GameRenderer(model, camera);
         inputController = new InputController(model, camera);
         gameController = new GameController(model, camera);
+        renderer = new GameRenderer(model, camera);
+        soundManager = new SoundManager(model, camera);
     }
 
     @Override
@@ -43,6 +45,7 @@ public class Main extends ApplicationAdapter {
         inputController.update(delta);
         gameController.update(delta);
         renderer.render();
+        soundManager.update();
     }
 
     @Override

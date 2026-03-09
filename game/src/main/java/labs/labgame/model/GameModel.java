@@ -21,20 +21,15 @@ public class GameModel {
     private final EnemySpawner enemySpawner;
     private Player player;
 
-    private final Map<Integer, Entity> entities;
-    private final List<Entity> pendingEntities;
-    private final List<Effect> effects;
-
-    private float time;
-    private boolean updating;
+    private final Map<Integer, Entity> entities = new HashMap<>();
+    private final List<Entity> pendingEntities = new ArrayList<>();
+    private final List<Effect> effects = new ArrayList<>();
+    private final List<SoundEffect> soundEffects = new ArrayList<>();
+    private float time = 0.0f;
+    private boolean updating = false;
 
     public GameModel() {
         world = createWorld();
-        entities = new HashMap<>();
-        pendingEntities = new ArrayList<>();
-        effects = new ArrayList<>();
-        time = 0.0f;
-        updating = false;
         enemySpawner = new EnemySpawner(this);
         addEntity(new Ground(world));
 
@@ -44,10 +39,6 @@ public class GameModel {
 
     private GameModel(DataInputStream in) throws IOException {
         world = createWorld();
-        entities = new HashMap<>();
-        pendingEntities = new ArrayList<>();
-        effects = new ArrayList<>();
-        updating = false;
         enemySpawner = new EnemySpawner(this);
         addEntity(new Ground(world));
 
@@ -124,6 +115,10 @@ public class GameModel {
         effects.add(effect);
     }
 
+    public void addSound(SoundEffect soundEffect) {
+        soundEffects.add(soundEffect);
+    }
+
     public void addBlock(float x, float y) {
         addEntity(new Block(world, x, y));
     }
@@ -144,6 +139,7 @@ public class GameModel {
 
     public void addExplosion(Vector2 center, float radius, float power, float damage) {
         addEffect(new ExplosionEffect(center, radius));
+        addSound(new SoundEffect(SoundEffect.SoundType.Explosion, center.x, center.y, 1.0f));
 
         float queryDist = 4 * radius;
         world.QueryAABB(fixture -> {
@@ -168,6 +164,7 @@ public class GameModel {
     public void update(float delta) {
         time += delta;
         enemySpawner.update();
+        soundEffects.clear();
 
         updating = true;
         for (Entity entity : entities.values()) {
@@ -264,6 +261,10 @@ public class GameModel {
 
     public List<Effect> getEffects() {
         return effects;
+    }
+
+    public List<SoundEffect> getSounds() {
+        return soundEffects;
     }
 
     public void serialize(OutputStream outputStream) throws IOException {
