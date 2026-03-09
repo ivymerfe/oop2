@@ -35,8 +35,8 @@ public class GameRenderer implements Disposable {
 
         skyTexture = new Texture("sky.png");
         skyTexture.setWrap(Texture.TextureWrap.MirroredRepeat, Texture.TextureWrap.MirroredRepeat);
-        groundTexture = new Texture("ground.jpg");
-        groundTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        groundTexture = new Texture("grass.png");
+        groundTexture.setWrap(Texture.TextureWrap.MirroredRepeat, Texture.TextureWrap.MirroredRepeat);
 
         playerRenderer = new PlayerRenderer();
         blockRenderer = new BlockRenderer();
@@ -58,8 +58,8 @@ public class GameRenderer implements Disposable {
 
         float skyOffset = pos.x * -0.005f;
         batch.draw(skyTexture, pos.x - 16, pos.y - 9, 32, 18, skyOffset, 1, skyOffset - 1, 0);
-        float groundOffset = pos.x * -0.02f;
-        batch.draw(groundTexture, pos.x - 16, pos.y - 9, 32, 4, groundOffset, 1, groundOffset - 1, 0);
+        float groundOffset = pos.x * -1f/16;
+        batch.draw(groundTexture, pos.x - 16, -8, 32, 9, groundOffset, 1, groundOffset - 2, 0);
 
         for (Entity entity : model.getEntities().values()) {
             if (entity instanceof Block b) blockRenderer.render(batch, b);

@@ -17,7 +17,7 @@ public class CameraController {
         float lerp = 0.1f;
         Vector3 pos = camera.position;
         float targetX = model.getPlayer().getX();
-        float targetY = 6;
+        float targetY = model.getPlayer().getY() + 2;
         pos.x += (targetX - pos.x) * lerp;
         pos.y += (targetY - pos.y) * lerp;
 
