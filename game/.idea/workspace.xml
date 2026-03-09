@@ -4,12 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="sounds impl">
+    <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="controllers">
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/TuiInputController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/tui/TuiRenderer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/GameController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/CameraController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/InputController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/InputController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/GameRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/GameRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/InputController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/GuiInputController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/tui/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/tui/Main.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,6 +79,7 @@
     "Gradle.Build game.executor": "Run",
     "Gradle.Download Sources.executor": "Run",
     "Gradle.game [:labs.labgame.gui.Main.main()].executor": "Run",
+    "Gradle.game [:labs.labgame.tui.Main.main()].executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -95,7 +99,7 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="Game" type="Application" factoryName="Application" show_console_on_std_err="true" show_console_on_std_out="true">
+    <configuration name="Gui" type="Application" factoryName="Application" show_console_on_std_err="true" show_console_on_std_out="true">
       <option name="ALTERNATIVE_JRE_PATH" value="25" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
       <option name="MAIN_CLASS_NAME" value="labs.labgame.gui.Main" />
@@ -144,7 +148,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773038687365</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="controllers">
+      <option name="closed" value="true" />
+      <created>1773041042654</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1773041042655</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -162,7 +174,15 @@
     <MESSAGE value="first playable version" />
     <MESSAGE value="serialization impl" />
     <MESSAGE value="sounds impl" />
-    <option name="LAST_COMMIT_MESSAGE" value="sounds impl" />
+    <MESSAGE value="controllers" />
+    <option name="LAST_COMMIT_MESSAGE" value="controllers" />
+  </component>
+  <component name="XDebuggerManager">
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="com.googlecode.lanterna.terminal.swing.SwingTerminalFrame" memberName="component" />
+      </pinned-members>
+    </pin-to-top-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -11,10 +11,39 @@ dependencies {
     implementation "com.badlogicgames.gdx:gdx:${gdxVersion}"
     implementation "com.badlogicgames.gdx:gdx-box2d:${gdxVersion}"
     implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:${gdxVersion}"
+    implementation "com.badlogicgames.gdx:gdx-backend-headless:${gdxVersion}"
     implementation "com.badlogicgames.gdx:gdx-platform:${gdxVersion}:natives-desktop"
     implementation "com.badlogicgames.gdx:gdx-box2d-platform:${gdxVersion}:natives-desktop"
+    implementation 'com.googlecode.lanterna:lanterna:3.1.2'
 }
 
 application {
     mainClass = 'labs.labgame.gui.Main'
+}
+
+jar {
+    manifest {
+        attributes('Main-Class': 'labs.labgame.tui.Main')
+    }
+}
+
+tasks.register('createTuiScripts', CreateStartScripts) {
+    mainClass = 'labs.labgame.tui.Main'
+    applicationName = 'tui'
+    outputDir = file("build/scripts")
+    classpath = project.objects.fileCollection().from(jar, configurations.runtimeClasspath)
+}
+
+distributions {
+    tui {
+        contents {
+            into('bin') {
+                from createTuiScripts
+            }
+            into('lib') {
+                from jar 
+                from configurations.runtimeClasspath
+            }
+        }
+    }
 }

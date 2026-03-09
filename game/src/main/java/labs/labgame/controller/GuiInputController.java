@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.Vector3;
 import labs.labgame.model.GameModel;
 import labs.labgame.model.Player;
 
-public class InputController {
+public class GuiInputController {
     private static final float ATTACK_CD = 0.25f;
     private static final float PLACE_CD = 0.1f;
 
@@ -18,7 +18,7 @@ public class InputController {
     private float lastAttackTime = 0.0f;
     private float lastPlaceTime = 0.0f;
 
-    public InputController(GameModel model, Camera camera) {
+    public GuiInputController(GameModel model, Camera camera) {
         this.model = model;
         this.camera = camera;
     }

@@ -6,7 +6,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import labs.labgame.controller.CameraController;
-import labs.labgame.controller.InputController;
+import labs.labgame.controller.GuiInputController;
 import labs.labgame.model.GameModel;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class Main extends ApplicationAdapter {
     private GameModel model;
     private OrthographicCamera camera;
 
-    private InputController inputController;
+    private GuiInputController inputController;
     private CameraController cameraController;
     private GameRenderer renderer;
     private SoundManager soundManager;
@@ -33,7 +33,7 @@ public class Main extends ApplicationAdapter {
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 32, 18);
 
-        inputController = new InputController(model, camera);
+        inputController = new GuiInputController(model, camera);
         cameraController = new CameraController(model, camera);
         renderer = new GameRenderer(model, camera);
         soundManager = new SoundManager(model, camera);
@@ -56,10 +56,6 @@ public class Main extends ApplicationAdapter {
         model.dispose();
     }
 
-    public static void main(String[] args) {
-        new Lwjgl3Application(new Main(), new Lwjgl3ApplicationConfiguration());
-    }
-
     private GameModel loadModel() {
         if (!Files.exists(SAVE_PATH)) {
             return new GameModel();
@@ -79,5 +75,9 @@ public class Main extends ApplicationAdapter {
         } catch (IOException exception) {
             exception.printStackTrace();
         }
+    }
+
+    public static void main(String[] args) {
+        new Lwjgl3Application(new Main(), new Lwjgl3ApplicationConfiguration());
     }
 }

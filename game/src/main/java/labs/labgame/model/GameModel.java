@@ -128,7 +128,7 @@ public class GameModel {
     }
 
     public void addBullet(Entity owner, Vector2 spawn, Vector2 target, Vector2 initialVelocity) {
-        Vector2 direction = target.sub(spawn);
+        Vector2 direction = target.cpy().sub(spawn);
         if (direction.isZero(0.001f)) {
             float fallback = owner instanceof Player p ? p.getLookDirection() : ((Enemy) owner).getLookDirection();
             direction.set(fallback, 0.0f);
