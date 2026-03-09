@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class Bullet extends Entity {
     public static final float RADIUS = 0.5f;
-    public static final float SPEED = 20.0f;
+    public static final float SPEED = 25.0f;
     public static final float EXPLOSION_RADIUS = 1.6f;
     public static final float EXPLOSION_POWER = 5.0f;
     public static final float EXPLOSION_DAMAGE = 25.0f;
@@ -42,7 +42,8 @@ public class Bullet extends Entity {
 
     @Override
     public void onCollisionEnter(Entity other, Object data) {
-        game.addExplosion(getBody().getPosition(), EXPLOSION_RADIUS, EXPLOSION_POWER, EXPLOSION_DAMAGE);
+        boolean damagePlayer = ownerId != game.getPlayer().id;
+        game.addExplosion(getBody().getPosition(), EXPLOSION_RADIUS, EXPLOSION_POWER, EXPLOSION_DAMAGE, damagePlayer);
         remove();
     }
 

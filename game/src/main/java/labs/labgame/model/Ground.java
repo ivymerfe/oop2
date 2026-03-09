@@ -28,7 +28,7 @@ public class Ground extends Entity {
         Body staticBody = world.createBody(bdef);
 
         EdgeShape shape = new EdgeShape();
-        shape.set(new Vector2(-100, 0), new Vector2(1000, 0));
+        shape.set(new Vector2(-100, 0), new Vector2(10000, 0));
 
         FixtureDef fdef = new FixtureDef();
         fdef.shape = shape;

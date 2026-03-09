@@ -137,7 +137,7 @@ public class GameModel {
         addEntity(new Bullet(this, owner.getId(), spawn.x, spawn.y, direction, initialVelocity));
     }
 
-    public void addExplosion(Vector2 center, float radius, float power, float damage) {
+    public void addExplosion(Vector2 center, float radius, float power, float damage, boolean damagePlayer) {
         addEffect(new ExplosionEffect(center, radius));
         addSound(new SoundEffect(SoundEffect.SoundType.Explosion, center.x, center.y, 1.0f));
 
@@ -150,7 +150,9 @@ public class GameModel {
                 Object o = body.getUserData();
                 float resist = 1.0f;
                 if (o instanceof Entity e) {
-                    e.damage(damage / (radius + distance));
+                    if (damagePlayer || !(e instanceof Player)) {
+                        e.damage(damage / (radius + distance));
+                    }
                     resist = e.getExplosionResistance();
                 }
                 Vector2 direction = bodyPosition.cpy().sub(center).nor();

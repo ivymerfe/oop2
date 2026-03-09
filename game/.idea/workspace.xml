@@ -7,7 +7,10 @@
     <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="tui impl">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/CameraController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/CameraController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/GameRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/GameRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Bullet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Bullet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Enemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Ground.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Ground.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

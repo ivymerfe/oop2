@@ -189,7 +189,7 @@ public class Enemy extends Entity {
             return;
         }
         model.getPlayer().score += 1;
-        model.addExplosion(getBody().getPosition().cpy(), SELF_DESTRUCT_RADIUS, SELF_DESTRUCT_POWER, SELF_DESTRUCT_DAMAGE);
+        model.addExplosion(getBody().getPosition().cpy(), SELF_DESTRUCT_RADIUS, SELF_DESTRUCT_POWER, SELF_DESTRUCT_DAMAGE, true);
         remove();
     }
 

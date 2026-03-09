@@ -14,12 +14,13 @@ public class CameraController {
     }
 
     public void update(float deltaTime) {
-        float lerp = 0.1f;
+        float lerpX = 0.1f;
+        float lerpY = 0.05f;
         Vector3 pos = camera.position;
         float targetX = model.getPlayer().getX();
-        float targetY = model.getPlayer().getY() + 2;
-        pos.x += (targetX - pos.x) * lerp;
-        pos.y += (targetY - pos.y) * lerp;
+        float targetY = model.getPlayer().getY() + 1;
+        pos.x += (targetX - pos.x) * lerpX;
+        pos.y += (targetY - pos.y) * lerpY;
 
         camera.update();
     }
