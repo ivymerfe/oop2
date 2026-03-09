@@ -3,13 +3,23 @@ package labs.labgame.model;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 public class GameModel {
+    private static final int TYPE_PLAYER = 1;
+    private static final int TYPE_GROUND = 2;
+    private static final int TYPE_BLOCK = 3;
+    private static final int TYPE_ENEMY = 4;
+    private static final int TYPE_BULLET = 5;
+
     private final World world;
-    private final Player player;
-    private final Ground ground;
     private final EnemySpawner enemySpawner;
+    private Player player;
 
     private final Map<Integer, Entity> entities;
     private final List<Entity> pendingEntities;
@@ -19,7 +29,46 @@ public class GameModel {
     private boolean updating;
 
     public GameModel() {
-        world = new World(new Vector2(0.0f, -40.0f), true);
+        world = createWorld();
+        entities = new HashMap<>();
+        pendingEntities = new ArrayList<>();
+        effects = new ArrayList<>();
+        time = 0.0f;
+        updating = false;
+        enemySpawner = new EnemySpawner(this);
+        addEntity(new Ground(world));
+
+        player = new Player(this);
+        addEntity(player);
+    }
+
+    private GameModel(DataInputStream in) throws IOException {
+        world = createWorld();
+        entities = new HashMap<>();
+        pendingEntities = new ArrayList<>();
+        effects = new ArrayList<>();
+        updating = false;
+        enemySpawner = new EnemySpawner(this);
+        addEntity(new Ground(world));
+
+        time = in.readFloat();
+
+        int entityCount = in.readInt();
+        for (int index = 0; index < entityCount; index++) {
+            int type = in.readInt();
+            Entity entity = readEntity(in, type);
+            addEntity(entity);
+            if (type == TYPE_PLAYER) {
+                player = (Player) entity;
+            }
+        }
+        if (player == null) {
+            player = new Player(this);
+        }
+    }
+
+    private static World createWorld() {
+        World world = new World(new Vector2(0.0f, -40.0f), true);
         world.setContactListener(new ContactListener() {
             @Override
             public void beginContact(Contact contact) {
@@ -55,21 +104,7 @@ public class GameModel {
             public void postSolve(Contact contact, ContactImpulse impulse) {
             }
         });
-
-        player = new Player(this);
-        ground = new Ground(world);
-        player.persistent = true;
-        ground.persistent = true;
-
-        entities = new HashMap<>();
-        pendingEntities = new ArrayList<>();
-        effects = new ArrayList<>();
-        time = 0.0f;
-        updating = false;
-        enemySpawner = new EnemySpawner(this);
-
-        addEntity(player);
-        addEntity(ground);
+        return world;
     }
 
     private static Entity getEntityOfFixture(Fixture fixture) {
@@ -104,7 +139,7 @@ public class GameModel {
             direction.set(fallback, 0.0f);
         }
         direction.nor();
-        addEntity(new Bullet(this, owner, spawn.x, spawn.y, direction, initialVelocity));
+        addEntity(new Bullet(this, owner.getId(), spawn.x, spawn.y, direction, initialVelocity));
     }
 
     public void addExplosion(Vector2 center, float radius, float power, float damage) {
@@ -117,11 +152,13 @@ public class GameModel {
             float distance = Math.max(0, center.dst(bodyPosition) - radius);
             if (distance <= radius) {
                 Object o = body.getUserData();
+                float resist = 1.0f;
                 if (o instanceof Entity e) {
                     e.damage(damage / (radius + distance));
+                    resist = e.getExplosionResistance();
                 }
                 Vector2 direction = bodyPosition.cpy().sub(center).nor();
-                Vector2 impulse = direction.scl(power*(1 - distance / radius));
+                Vector2 impulse = direction.scl(power / resist * (1 - distance / radius));
                 body.applyLinearImpulse(impulse, body.getWorldCenter(), true);
             }
             return true;
@@ -227,5 +264,50 @@ public class GameModel {
 
     public List<Effect> getEffects() {
         return effects;
+    }
+
+    public void serialize(OutputStream outputStream) throws IOException {
+        DataOutputStream out = new DataOutputStream(outputStream);
+        out.writeFloat(time);
+        out.writeInt(entities.size());
+        for (Entity entity : entities.values()) {
+            out.writeInt(getEntityType(entity));
+            switch (entity) {
+                case Player pl -> pl.serialize(out);
+                case Ground gr -> gr.serialize(out);
+                case Block block -> block.serialize(out);
+                case Enemy enemy -> enemy.serialize(out);
+                case Bullet bullet -> bullet.serialize(out);
+                default -> throw new IOException("Unsupported entity type: " + entity.getClass().getName());
+            }
+        }
+        out.flush();
+    }
+
+    public static GameModel deserialize(InputStream inputStream) throws IOException {
+        DataInputStream in = new DataInputStream(inputStream);
+        return new GameModel(in);
+    }
+
+    private Entity readEntity(DataInputStream in, int type) throws IOException {
+        return switch (type) {
+            case TYPE_PLAYER -> Player.deserialize(this, in);
+            case TYPE_GROUND -> Ground.deserialize(world, in);
+            case TYPE_BLOCK -> Block.deserialize(world, in);
+            case TYPE_ENEMY -> Enemy.deserialize(this, in);
+            case TYPE_BULLET -> Bullet.deserialize(this, in);
+            default -> throw new IOException("bad entity: " + type);
+        };
+    }
+
+    private static int getEntityType(Entity entity) {
+        return switch (entity) {
+            case Player p -> TYPE_PLAYER;
+            case Ground g -> TYPE_GROUND;
+            case Block b -> TYPE_BLOCK;
+            case Enemy e -> TYPE_ENEMY;
+            case Bullet b -> TYPE_BULLET;
+            default -> -1;
+        };
     }
 }

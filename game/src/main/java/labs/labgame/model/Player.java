@@ -3,7 +3,10 @@ package labs.labgame.model;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.World;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class Player extends Entity {
     private static final float WIDTH = 1.0f;
@@ -11,6 +14,7 @@ public class Player extends Entity {
     private static final float MAX_SPEED = 15.0f;
     private static final float MOVE_FORCE = 150.0f;
     private static final float STOP_FORCE = 50.0f;
+    private static final float WALL_FORCE = 150.0f;
     private static final float JUMP_IMPULSE = 9.0f;
     private static final float MAX_HEALTH = 100.0f;
     private static final float REGEN = 10.0f;
@@ -19,36 +23,53 @@ public class Player extends Entity {
     private float lookDirection = 1.0f;
     private float movement = 0.0f;
     private boolean jumping = false;
-    private float health = MAX_HEALTH;
-    private int footContacts = 0;
+    public float health = MAX_HEALTH;
     private int headContacts = 0;
+    private int sideContacts = 0;
+    private int footContacts = 0;
     public int score = 0;
+    public int maxScore = 0;
 
-    private GameModel game;
+    private final GameModel model;
 
-    public Player(GameModel game) {
-        this.game = game;
+    public Player(GameModel model) {
+        this(model, null);
+    }
 
+    private Player(GameModel model, EntityState state) {
+        super(createPlayerBody(model), state == null ? getNextId() : state.id());
+        this.model = model;
+        if (state != null) {
+            applyState(state);
+        }
+        persistent = true;
+    }
+
+    private static Body createPlayerBody(GameModel game) {
         Body body = BodyHelper.createBody(game.getWorld(), BodyDef.BodyType.DynamicBody, 0, 2, true, false);
         BodyHelper.createBox(body, WIDTH, HEIGHT, 1.0f, 0.5f, 0.0f, false, null, null);
-        BodyHelper.createBox(body, WIDTH / 1.25f, 0.1f, 0.0f, 0.0f, 0.0f, true,
-                new Vector2(0.0f, -HEIGHT / 2.0f), Sensors.PlayerFoot);
         BodyHelper.createBox(body, WIDTH / 1.2f, 0.12f, 0.0f, 0.0f, 0.0f, true,
                 new Vector2(0.0f, HEIGHT / 2.0f), Sensors.PlayerHead);
-
-        super(body);
+        BodyHelper.createBox(body, 0.1f, HEIGHT / 1.25f, 0.0f, 0.0f, 0.0f, true,
+                new Vector2(-WIDTH / 2.0f, 0.0f), Sensors.PlayerSide);
+        BodyHelper.createBox(body, 0.1f, HEIGHT / 1.25f, 0.0f, 0.0f, 0.0f, true,
+                new Vector2(WIDTH / 2.0f, 0.0f), Sensors.PlayerSide);
+        BodyHelper.createBox(body, WIDTH / 1.25f, 0.1f, 0.0f, 0.0f, 0.0f, true,
+                new Vector2(0.0f, -HEIGHT / 2.0f), Sensors.PlayerFoot);
+        return body;
     }
 
     public void update(float delta) {
         health = Math.min(MAX_HEALTH, health + REGEN*delta);
+        maxScore = Math.max(score, maxScore);
         if (headContacts > 0) {
             health -= HEAD_DAMAGE*delta;
         }
-        if (health <= 0) {
+        if (health <= 0 || body.getPosition().y < 0) {
             health = MAX_HEALTH;
             body.setTransform(0, 2, 0);
             score = 0;
-            game.resetEntities();
+            model.resetEntities();
             return;
         }
         Vector2 velocity = getBody().getLinearVelocity();
@@ -63,8 +84,15 @@ public class Player extends Entity {
             if (footContacts > 0) {
                 getBody().applyLinearImpulse(new Vector2(0.0f, JUMP_IMPULSE), getBody().getWorldCenter(), true);
             }
+            if (sideContacts > 0) {
+                forceY += WALL_FORCE;
+            }
         }
         getBody().applyForceToCenter(forceX, forceY, true);
+    }
+
+    public void heal(int amount) {
+        health = Math.min(MAX_HEALTH, health + amount);
     }
 
     @Override
@@ -84,22 +112,28 @@ public class Player extends Entity {
     }
 
     @Override
-    public void onCollisionEnter(Entity other, Object myFixtureData) {
-        if (Sensors.PlayerFoot.equals(myFixtureData)) {
-            footContacts += 1;
-        }
-        if (Sensors.PlayerHead.equals(myFixtureData)) {
+    public void onCollisionEnter(Entity other, Object data) {
+        if (Sensors.PlayerHead.equals(data)) {
             headContacts += 1;
+        }
+        if (Sensors.PlayerSide.equals(data)) {
+            sideContacts += 1;
+        }
+        if (Sensors.PlayerFoot.equals(data)) {
+            footContacts += 1;
         }
     }
 
     @Override
-    public void onCollisionExit(Entity other, Object myFixtureData) {
-        if (Sensors.PlayerFoot.equals(myFixtureData)) {
-            footContacts = Math.max(0, footContacts - 1);
-        }
-        if (Sensors.PlayerHead.equals(myFixtureData)) {
+    public void onCollisionExit(Entity other, Object data) {
+        if (Sensors.PlayerHead.equals(data)) {
             headContacts = Math.max(0, headContacts - 1);
+        }
+        if (Sensors.PlayerSide.equals(data)) {
+            sideContacts = Math.max(0, sideContacts - 1);
+        }
+        if (Sensors.PlayerFoot.equals(data)) {
+            footContacts = Math.max(0, footContacts - 1);
         }
     }
     public float getWidth() {
@@ -116,5 +150,21 @@ public class Player extends Entity {
 
     public float getHealth() {
         return health;
+    }
+
+    public void serialize(DataOutputStream out) throws IOException {
+        serializeEntity(out);
+        out.writeFloat(health);
+        out.writeInt(score);
+        out.writeInt(maxScore);
+    }
+
+    public static Player deserialize(GameModel game, DataInputStream in) throws IOException {
+        EntityState state = deserializeEntity(in);
+        Player player = new Player(game, state);
+        player.health = in.readFloat();
+        player.score = in.readInt();
+        player.maxScore = in.readInt();
+        return player;
     }
 }

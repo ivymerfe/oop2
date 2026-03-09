@@ -44,6 +44,7 @@ public class HudRenderer implements IRenderer {
             batch.draw(heartTexture, x, y, size, size);
         }
         font.draw(batch, "" + player.score, width / 2 + 200, 65);
+        font.draw(batch, "" + player.maxScore, width - 100, 65);
     }
 
     @Override

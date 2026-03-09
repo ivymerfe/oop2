@@ -4,29 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/GameController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/ExplosionRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/IRenderer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/BodyHelper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Effect.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Sensors.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/tui/Main.java" afterDir="false" />
+    <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="first playable version">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/InputController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/InputController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/WorldController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/BlockRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/BlockRenderer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/GameRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/GameRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/HudRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/HudRenderer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/PlayerRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/PlayerRenderer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Blocks.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Bullets.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Components.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Block.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Block.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Bullet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Bullet.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Enemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/EnemySpawner.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/EnemySpawner.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Entity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Ground.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Ground.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Player.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Player.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Registry.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Sensors.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Sensors.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,6 +56,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "ivymerfe"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/ivymerfe/oop2&quot;,
+    &quot;accountId&quot;: &quot;f514784b-2ff3-4017-af70-ca4697e98ae3&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 2
 }</component>
@@ -80,7 +82,7 @@
     "Application.Unnamed.executor": "Run",
     "Gradle.Build game.executor": "Run",
     "Gradle.Download Sources.executor": "Run",
-    "Gradle.game [:labs.labgame.gui.Main.main()].executor": "Debug",
+    "Gradle.game [:labs.labgame.gui.Main.main()].executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -125,6 +127,15 @@
       <option name="presentableId" value="Default" />
       <updated>1772685888338</updated>
     </task>
+    <task id="LOCAL-00001" summary="first playable version">
+      <option name="closed" value="true" />
+      <created>1772990814897</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1772990814898</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -137,6 +148,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="first playable version" />
+    <option name="LAST_COMMIT_MESSAGE" value="first playable version" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

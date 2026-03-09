@@ -4,6 +4,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 public class Enemy extends Entity {
     public static final float WIDTH = 0.8f;
     public static final float HEIGHT = 1.8f;
@@ -17,7 +21,7 @@ public class Enemy extends Entity {
     private static final float MIN_RANGE = 4.5f;
     private static final float SHOOT_RANGE = 25.0f;
     private static final float SELF_DESTRUCT_RADIUS = 2.0f;
-    private static final float SELF_DESTRUCT_POWER = 50.0f;
+    private static final float SELF_DESTRUCT_POWER = 10.0f;
     private static final float SELF_DESTRUCT_DAMAGE = 40.0f;
     private static final float SELF_DESTRUCT_TIME = 1.0f;
 
@@ -32,14 +36,25 @@ public class Enemy extends Entity {
     private boolean selfDestructTriggered = false;
 
     public Enemy(GameModel model, float x, float y) {
+        this(model, x, y, null);
+    }
+
+    private Enemy(GameModel model, float x, float y, EntityState state) {
+        super(createEnemyBody(model, x, y), state == null ? getNextId() : state.id());
         this.model = model;
+        if (state != null) {
+            applyState(state);
+        }
+    }
+
+    private static Body createEnemyBody(GameModel model, float x, float y) {
         Body body = BodyHelper.createBody(model.getWorld(), BodyDef.BodyType.DynamicBody, x, y, true, false);
         BodyHelper.createBox(body, WIDTH, HEIGHT, 1.2f, 0.4f, 0.0f, false, null, null);
         BodyHelper.createBox(body, WIDTH / 1.2f, 0.12f, 0.0f, 0.0f, 0.0f, true,
                 new Vector2(0.0f, -HEIGHT / 2.0f), Sensors.EnemyFoot);
         BodyHelper.createBox(body, WIDTH / 1.2f, 0.12f, 0.0f, 0.0f, 0.0f, true,
                 new Vector2(0.0f, HEIGHT / 2.0f), Sensors.EnemyHead);
-        super(body);
+        return body;
     }
 
     public void update(float delta) {
@@ -48,6 +63,7 @@ public class Enemy extends Entity {
         }
         if (health <= 0) {
             model.getPlayer().score += 1;
+            model.getPlayer().heal(20);
             remove();
             return;
         }
@@ -178,14 +194,14 @@ public class Enemy extends Entity {
     }
 
     @Override
-    public void onCollisionEnter(Entity other, Object myFixtureData) {
-        if (Sensors.EnemyFoot.equals(myFixtureData)) {
+    public void onCollisionEnter(Entity other, Object data) {
+        if (Sensors.EnemyFoot.equals(data)) {
             footContacts += 1;
             return;
         }
         if (other instanceof Block) {
             blockContacts += 1;
-            if (Sensors.EnemyHead.equals(myFixtureData)) {
+            if (Sensors.EnemyHead.equals(data)) {
                 headBlockContacts += 1;
                 selfDestructTriggered = true;
             }
@@ -193,13 +209,13 @@ public class Enemy extends Entity {
     }
 
     @Override
-    public void onCollisionExit(Entity other, Object myFixtureData) {
-        if (Sensors.EnemyFoot.equals(myFixtureData)) {
+    public void onCollisionExit(Entity other, Object data) {
+        if (Sensors.EnemyFoot.equals(data)) {
             footContacts = Math.max(0, footContacts - 1);
         }
         if (other instanceof Block) {
             blockContacts = Math.max(0, blockContacts - 1);
-            if (Sensors.EnemyHead.equals(myFixtureData)) {
+            if (Sensors.EnemyHead.equals(data)) {
                 headBlockContacts = Math.max(0, headBlockContacts - 1);
             }
         }
@@ -219,5 +235,21 @@ public class Enemy extends Entity {
 
     public float getHeight() {
         return HEIGHT;
+    }
+
+    public void serialize(DataOutputStream out) throws IOException {
+        serializeEntity(out);
+        out.writeFloat(health);
+        out.writeFloat(lastContactTime);
+        out.writeBoolean(selfDestructTriggered);
+    }
+
+    public static Enemy deserialize(GameModel model, DataInputStream in) throws IOException {
+        EntityState state = deserializeEntity(in);
+        Enemy enemy = new Enemy(model, state.x(), state.y(), state);
+        enemy.health = in.readFloat();
+        enemy.lastContactTime = in.readFloat();
+        enemy.selfDestructTriggered = in.readBoolean();
+        return enemy;
     }
 }

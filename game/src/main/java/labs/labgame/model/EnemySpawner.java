@@ -24,7 +24,7 @@ public class EnemySpawner {
 
     public void update() {
         int aliveEnemies = model.countAliveEnemies();
-        int targetEnemies = Math.min(MAX_ENEMIES, 2 + model.getPlayer().score / 3 + (int) (model.getTime() / 30.0f));
+        int targetEnemies = Math.min(MAX_ENEMIES, 2 + model.getPlayer().score / 2);
 
         if (aliveEnemies >= targetEnemies || model.getTime() < nextSpawnTime) {
             return;
