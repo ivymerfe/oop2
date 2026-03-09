@@ -5,7 +5,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.physics.box2d.Box2D;
-import labs.labgame.controller.GameController;
+import labs.labgame.controller.CameraController;
 import labs.labgame.controller.InputController;
 import labs.labgame.model.GameModel;
 
@@ -22,7 +22,7 @@ public class Main extends ApplicationAdapter {
     private OrthographicCamera camera;
 
     private InputController inputController;
-    private GameController gameController;
+    private CameraController cameraController;
     private GameRenderer renderer;
     private SoundManager soundManager;
 
@@ -34,7 +34,7 @@ public class Main extends ApplicationAdapter {
         camera.setToOrtho(false, 32, 18);
 
         inputController = new InputController(model, camera);
-        gameController = new GameController(model, camera);
+        cameraController = new CameraController(model, camera);
         renderer = new GameRenderer(model, camera);
         soundManager = new SoundManager(model, camera);
     }
@@ -42,8 +42,9 @@ public class Main extends ApplicationAdapter {
     @Override
     public void render() {
         float delta = 1f/60;
+        model.update(delta);
         inputController.update(delta);
-        gameController.update(delta);
+        cameraController.update(delta);
         renderer.render();
         soundManager.update();
     }

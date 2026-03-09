@@ -4,12 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="serialization impl">
-      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/SoundManager.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/SoundEffect.java" afterDir="false" />
+    <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="sounds impl">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/GameController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/CameraController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/InputController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/InputController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/GameRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/GameRenderer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -136,7 +136,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773037456725</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="sounds impl">
+      <option name="closed" value="true" />
+      <created>1773038687365</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1773038687365</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -153,7 +161,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first playable version" />
     <MESSAGE value="serialization impl" />
-    <option name="LAST_COMMIT_MESSAGE" value="serialization impl" />
+    <MESSAGE value="sounds impl" />
+    <option name="LAST_COMMIT_MESSAGE" value="sounds impl" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

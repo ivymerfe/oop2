@@ -43,7 +43,7 @@ public class InputController {
         float time = model.getTime();
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && time - lastAttackTime > ATTACK_CD) {
             Vector2 pos = player.getPosition();
-            Vector2 bulletPos = pos.cpy().sub(point.x, point.y).nor().scl(-1.5f).add(pos);
+            Vector2 bulletPos = pos.cpy().sub(point.x, point.y).nor().scl(-2.0f).add(pos);
             if (bulletPos.y < 0) bulletPos.y = 0;
 
             model.addBullet(player, bulletPos, new Vector2(point.x, point.y), player.getBody().getLinearVelocity());
