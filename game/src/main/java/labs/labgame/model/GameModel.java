@@ -21,8 +21,10 @@ public class GameModel {
     private final EnemySpawner enemySpawner;
     private Player player;
 
+    private int nextEntityId = 0;
     private final Map<Integer, Entity> entities = new HashMap<>();
     private final List<Entity> pendingEntities = new ArrayList<>();
+
     private final List<Effect> effects = new ArrayList<>();
     private final List<SoundEffect> soundEffects = new ArrayList<>();
     private float time = 0.0f;
@@ -31,16 +33,17 @@ public class GameModel {
     public GameModel() {
         world = createWorld();
         enemySpawner = new EnemySpawner(this);
-        addEntity(new Ground(world));
+        addEntity(new Ground(this));
 
         player = new Player(this);
+        player.setPosition(0, 2);
         addEntity(player);
     }
 
     private GameModel(DataInputStream in) throws IOException {
         world = createWorld();
         enemySpawner = new EnemySpawner(this);
-        addEntity(new Ground(world));
+        addEntity(new Ground(this));
 
         time = in.readFloat();
 
@@ -104,6 +107,10 @@ public class GameModel {
     }
 
     public void addEntity(Entity entity) {
+        if (entity.getId() == -1) {
+            entity.setId(nextEntityId);
+        }
+        nextEntityId = Math.max(entity.getId() + 1, nextEntityId);
         if (updating) {
             pendingEntities.add(entity);
             return;
@@ -120,21 +127,23 @@ public class GameModel {
     }
 
     public void addBlock(float x, float y) {
-        addEntity(new Block(world, x, y));
+        Block block = new Block(this);
+        block.setPosition(x, y);
+        addEntity(block);
     }
 
     public void addEnemy(float x, float y) {
-        addEntity(new Enemy(this, x, y));
+        Enemy enemy = new Enemy(this);
+        enemy.setPosition(x, y);
+        addEntity(enemy);
     }
 
-    public void addBullet(Entity owner, Vector2 spawn, Vector2 target, Vector2 initialVelocity) {
-        Vector2 direction = target.cpy().sub(spawn);
-        if (direction.isZero(0.001f)) {
-            float fallback = owner instanceof Player p ? p.getLookDirection() : ((Enemy) owner).getLookDirection();
-            direction.set(fallback, 0.0f);
-        }
-        direction.nor();
-        addEntity(new Bullet(this, owner.getId(), spawn.x, spawn.y, direction, initialVelocity));
+    public void addBullet(float x, float y, Vector2 direction, Vector2 initialVelocity, Entity owner) {
+        Bullet bullet = new Bullet(this);
+        bullet.setPosition(x, y);
+        bullet.setMovement(direction, initialVelocity);
+        bullet.setOwner(owner.getId());
+        addEntity(bullet);
     }
 
     public void addExplosion(Vector2 center, float radius, float power, float damage, boolean damagePlayer) {
@@ -293,14 +302,16 @@ public class GameModel {
     }
 
     private Entity readEntity(DataInputStream in, int type) throws IOException {
-        return switch (type) {
-            case TYPE_PLAYER -> Player.deserialize(this, in);
-            case TYPE_GROUND -> Ground.deserialize(world, in);
-            case TYPE_BLOCK -> Block.deserialize(world, in);
-            case TYPE_ENEMY -> Enemy.deserialize(this, in);
-            case TYPE_BULLET -> Bullet.deserialize(this, in);
+        Entity entity = switch (type) {
+            case TYPE_PLAYER -> new Player(this);
+            case TYPE_GROUND -> new Ground(this);
+            case TYPE_BLOCK -> new Block(this);
+            case TYPE_ENEMY -> new Enemy(this);
+            case TYPE_BULLET -> new Bullet(this);
             default -> throw new IOException("bad entity: " + type);
         };
+        entity.deserialize(in);
+        return entity;
     }
 
     private static int getEntityType(Entity entity) {

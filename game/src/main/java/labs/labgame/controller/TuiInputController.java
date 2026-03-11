@@ -89,12 +89,7 @@ public class TuiInputController {
         target = viewport.cellCenterToWorld(col, row);
 
         if (attack && time - lastAttackTime >= ATTACK_CD) {
-            Vector2 bulletPos = player.getPosition().cpy().sub(target).nor().scl(-2.0f).add(player.getPosition());
-            if (bulletPos.y < 0.0f) {
-                bulletPos.y = 0.0f;
-            }
-
-            model.addBullet(player, bulletPos, target, player.getBody().getLinearVelocity().cpy());
+            model.getPlayer().shootAt(target);
             lastAttackTime = time;
         }
         if (place && time - lastPlaceTime >= PLACE_CD) {

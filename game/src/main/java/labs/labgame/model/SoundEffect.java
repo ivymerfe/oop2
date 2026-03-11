@@ -24,8 +24,4 @@ public class SoundEffect {
     public Vector2 getPosition() {
         return position;
     }
-
-    public float getVolume() {
-        return volume;
-    }
 }

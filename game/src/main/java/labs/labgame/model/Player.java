@@ -30,23 +30,14 @@ public class Player extends Entity {
     public int score = 0;
     public int maxScore = 0;
 
-    private final GameModel model;
-
     public Player(GameModel model) {
-        this(model, null);
-    }
-
-    private Player(GameModel model, EntityState state) {
-        super(createPlayerBody(model), state == null ? getNextId() : state.id());
-        this.model = model;
-        if (state != null) {
-            applyState(state);
-        }
+        super(model);
         persistent = true;
     }
 
-    private static Body createPlayerBody(GameModel game) {
-        Body body = BodyHelper.createBody(game.getWorld(), BodyDef.BodyType.DynamicBody, 0, 2, true, false);
+    @Override
+    protected Body createBody() {
+        Body body = BodyHelper.createBody(model.getWorld(), BodyDef.BodyType.DynamicBody, 0, 2, true, false);
         BodyHelper.createBox(body, WIDTH, HEIGHT, 1.0f, 0.5f, 0.0f, false, null, null);
         BodyHelper.createBox(body, WIDTH / 1.2f, 0.12f, 0.0f, 0.0f, 0.0f, true,
                 new Vector2(0.0f, HEIGHT / 2.0f), Sensors.PlayerHead);
@@ -111,6 +102,15 @@ public class Player extends Entity {
         this.jumping = jumping;
     }
 
+    public void shootAt(Vector2 target) {
+        Vector2 playerPos = getPosition();
+        Vector2 dir = target.cpy().sub(playerPos).nor();
+        Vector2 pos = playerPos.cpy().add(dir.cpy().scl(2));
+        if (pos.y < 0) pos.y = 0;
+
+        model.addBullet(pos.x, pos.y, dir, getBody().getLinearVelocity(), this);
+    }
+
     @Override
     public void onCollisionEnter(Entity other, Object data) {
         if (Sensors.PlayerHead.equals(data)) {
@@ -152,19 +152,24 @@ public class Player extends Entity {
         return health;
     }
 
+    @Override
+    public void remove() {
+        return;
+    }
+
+    @Override
     public void serialize(DataOutputStream out) throws IOException {
-        serializeEntity(out);
+        super.serialize(out);
         out.writeFloat(health);
         out.writeInt(score);
         out.writeInt(maxScore);
     }
 
-    public static Player deserialize(GameModel game, DataInputStream in) throws IOException {
-        EntityState state = deserializeEntity(in);
-        Player player = new Player(game, state);
-        player.health = in.readFloat();
-        player.score = in.readInt();
-        player.maxScore = in.readInt();
-        return player;
+    @Override
+    public void deserialize(DataInputStream in) throws IOException {
+        super.deserialize(in);
+        health = in.readFloat();
+        score = in.readInt();
+        maxScore = in.readInt();
     }
 }

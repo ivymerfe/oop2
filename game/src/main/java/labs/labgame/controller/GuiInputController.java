@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import labs.labgame.model.Bullet;
 import labs.labgame.model.GameModel;
 import labs.labgame.model.Player;
 
@@ -39,14 +40,11 @@ public class GuiInputController {
 
         Vector3 point = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0.0f);
         camera.unproject(point);
+        Vector2 target = new Vector2(point.x, point.y);
 
         float time = model.getTime();
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT) && time - lastAttackTime > ATTACK_CD) {
-            Vector2 pos = player.getPosition();
-            Vector2 bulletPos = pos.cpy().sub(point.x, point.y).nor().scl(-2.0f).add(pos);
-            if (bulletPos.y < 0) bulletPos.y = 0;
-
-            model.addBullet(player, bulletPos, new Vector2(point.x, point.y), player.getBody().getLinearVelocity());
+            model.getPlayer().shootAt(target);
             lastAttackTime = time;
         }
 

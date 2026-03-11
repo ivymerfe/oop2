@@ -13,17 +13,13 @@ public class Block extends Entity {
 
     private float health = 50;
 
-    public Block(World world, float x, float y) {
-        super(createBlockBody(world, x, y));
+    public Block(GameModel model) {
+        super(model);
     }
 
-    private Block(World world, EntityState state) {
-        super(createBlockBody(world, state.x(), state.y()), state.id());
-        applyState(state);
-    }
-
-    private static Body createBlockBody(World world, float x, float y) {
-        Body body = BodyHelper.createBody(world, BodyDef.BodyType.DynamicBody, x, y, false, false);
+    @Override
+    protected Body createBody() {
+        Body body = BodyHelper.createBody(model.getWorld(), BodyDef.BodyType.DynamicBody, 0, 0, false, false);
         BodyHelper.createBox(body, SIZE, SIZE, 3.0f, 0.8f, 0.0f, false, null, null);
         return body;
     }
@@ -57,15 +53,15 @@ public class Block extends Entity {
 
     }
 
+    @Override
     public void serialize(DataOutputStream out) throws IOException {
-        serializeEntity(out);
+        super.serialize(out);
         out.writeFloat(health);
     }
 
-    public static Block deserialize(World world, DataInputStream in) throws IOException {
-        EntityState state = deserializeEntity(in);
-        Block block = new Block(world, state);
-        block.health = in.readFloat();
-        return block;
+    @Override
+    public void deserialize(DataInputStream in) throws IOException {
+        super.deserialize(in);
+        health = in.readFloat();
     }
 }

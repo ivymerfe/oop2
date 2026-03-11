@@ -15,19 +15,23 @@ public class Bullet extends Entity {
     public static final float EXPLOSION_POWER = 5.0f;
     public static final float EXPLOSION_DAMAGE = 25.0f;
 
-    private final GameModel game;
     private int ownerId;
     private float lifeTime = 0.0f;
 
-    public Bullet(GameModel game, int ownerId, float x, float y, Vector2 direction, Vector2 initialVelocity) {
-        this.game = game;
-        this.ownerId = ownerId;
+    public Bullet(GameModel model) {
+        super(model);
+    }
 
-        Body body = BodyHelper.createBody(game.getWorld(), BodyDef.BodyType.DynamicBody, x, y, true, false);
+    @Override
+    protected Body createBody() {
+        Body body = BodyHelper.createBody(model.getWorld(), BodyDef.BodyType.DynamicBody, 0, 0, true, false);
         body.setGravityScale(0.5f);
         BodyHelper.createCircle(body, RADIUS, 0.1f, 0.0f, 0.0f, false, null, null);
-        body.setLinearVelocity(initialVelocity.add(direction.x * SPEED, direction.y * SPEED));
-        super(body);
+        return body;
+    }
+
+    public void setMovement(Vector2 direction, Vector2 initialVelocity) {
+        body.setLinearVelocity(initialVelocity.add(direction.scl(SPEED)));
     }
 
     @Override
@@ -42,8 +46,8 @@ public class Bullet extends Entity {
 
     @Override
     public void onCollisionEnter(Entity other, Object data) {
-        boolean damagePlayer = ownerId != game.getPlayer().id;
-        game.addExplosion(getBody().getPosition(), EXPLOSION_RADIUS, EXPLOSION_POWER, EXPLOSION_DAMAGE, damagePlayer);
+        boolean damagePlayer = ownerId != model.getPlayer().id;
+        model.addExplosion(getBody().getPosition(), EXPLOSION_RADIUS, EXPLOSION_POWER, EXPLOSION_DAMAGE, damagePlayer);
         remove();
     }
 
@@ -52,22 +56,24 @@ public class Bullet extends Entity {
 
     }
 
+    public void setOwner(int ownerId) {
+        this.ownerId = ownerId;
+    }
+
     public float getLifeTime() {
         return lifeTime;
     }
 
     public void serialize(DataOutputStream out) throws IOException {
-        serializeEntity(out);
+        super.serialize(out);
         out.writeInt(ownerId);
         out.writeFloat(lifeTime);
     }
 
-    public static Bullet deserialize(GameModel game, DataInputStream in) throws IOException {
-        EntityState state = deserializeEntity(in);
-        int ownerId = in.readInt();
-        Bullet bullet = new Bullet(game, ownerId, state.x(), state.y(), new Vector2(1.0f, 0.0f), new Vector2());
-        bullet.lifeTime = in.readFloat();
-        bullet.applyState(state);
-        return bullet;
+    @Override
+    public void deserialize(DataInputStream in) throws IOException {
+        super.deserialize(in);
+        ownerId = in.readInt();
+        lifeTime = in.readFloat();
     }
 }

@@ -4,13 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="tui impl">
+    <list default="true" id="7b9b41e5-3938-4975-98f2-f2ee701c3d0f" name="Changes" comment="improve tui version">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/CameraController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/CameraController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/GuiInputController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/GuiInputController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/TuiInputController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/controller/TuiInputController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/IRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/gui/IRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Block.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Block.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Bullet.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Bullet.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Enemy.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Enemy.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Entity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/GameModel.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Ground.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Ground.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Player.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/Player.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/labs/labgame/model/SoundEffect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/labs/labgame/model/SoundEffect.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,33 +76,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Game.executor&quot;: &quot;Run&quot;,
-    &quot;Application.Unnamed.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Build game.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.game [:labs.labgame.gui.Main.main()].executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.game [:labs.labgame.tui.Main.main()].executor&quot;: &quot;Debug&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/ivy/projects/oop2/game&quot;,
-    &quot;onboarding.tips.debug.path&quot;: &quot;/home/ivy/projects/oop/game/src/main/java/org/example/Main.java&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Game.executor": "Run",
+    "Application.Unnamed.executor": "Run",
+    "Gradle.Build game.executor": "Run",
+    "Gradle.Download Sources.executor": "Run",
+    "Gradle.game [:labs.labgame.gui.Main.main()].executor": "Debug",
+    "Gradle.game [:labs.labgame.tui.Main.main()].executor": "Debug",
+    "Gradle.game [tui].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/ivy/projects/oop2/game",
+    "onboarding.tips.debug.path": "/home/ivy/projects/oop/game/src/main/java/org/example/Main.java",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "preferences.keymap"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/java/labs/labgame/gui" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.Gui">
     <configuration name="Gui" type="Application" factoryName="Application" show_console_on_std_err="true" show_console_on_std_out="true">
       <option name="ALTERNATIVE_JRE_PATH" value="25" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
@@ -106,6 +113,36 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="game [tui]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="tui" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <ExternalSystemDebugDisabled>false</ExternalSystemDebugDisabled>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <GradleProfilingDisabled>false</GradleProfilingDisabled>
+      <GradleCoverageDisabled>false</GradleCoverageDisabled>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Gradle.game [tui]" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -162,7 +199,15 @@
       <option name="project" value="LOCAL" />
       <updated>1773052623096</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="improve tui version">
+      <option name="closed" value="true" />
+      <created>1773238610484</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1773238610484</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -182,9 +227,19 @@
     <MESSAGE value="sounds impl" />
     <MESSAGE value="controllers" />
     <MESSAGE value="tui impl" />
-    <option name="LAST_COMMIT_MESSAGE" value="tui impl" />
+    <MESSAGE value="improve tui version" />
+    <option name="LAST_COMMIT_MESSAGE" value="improve tui version" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/labs/labgame/model/Player.java</url>
+          <line>156</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
         <PinnedItemInfo parentTag="com.googlecode.lanterna.terminal.swing.SwingTerminalFrame" memberName="component" />

@@ -12,20 +12,16 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public class Ground extends Entity {
-    public Ground(World world) {
-        super(createGroundBody(world));
+    public Ground(GameModel model) {
+        super(model);
         persistent = true;
     }
 
-    private Ground(World world, EntityState state) {
-        super(createGroundBody(world), state.id());
-        applyState(state);
-    }
-
-    private static Body createGroundBody(World world) {
+    @Override
+    protected Body createBody() {
         BodyDef bdef = new BodyDef();
         bdef.position.set(0, 0);
-        Body staticBody = world.createBody(bdef);
+        Body staticBody = model.getWorld().createBody(bdef);
 
         EdgeShape shape = new EdgeShape();
         shape.set(new Vector2(-100, 0), new Vector2(10000, 0));
@@ -59,14 +55,5 @@ public class Ground extends Entity {
     @Override
     public void onCollisionExit(Entity other, Object data) {
 
-    }
-
-    public void serialize(DataOutputStream out) throws IOException {
-        serializeEntity(out);
-    }
-
-    public static Ground deserialize(World world, DataInputStream in) throws IOException {
-        EntityState state = deserializeEntity(in);
-        return new Ground(world, state);
     }
 }

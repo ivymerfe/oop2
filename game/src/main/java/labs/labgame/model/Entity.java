@@ -8,31 +8,19 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 public abstract class Entity {
-    private static int nextId = 0;
-
-    protected final int id;
+    protected final GameModel model;
+    protected int id = -1;
     protected final Body body;
     private boolean removed = false;
     public boolean persistent = false;
 
-    protected Entity(Body body) {
-        this(body, getNextId());
-    }
-
-    protected Entity(Body body, int id) {
-        this.id = id;
-        nextId = Math.max(nextId, id + 1);
-        this.body = body;
+    public Entity(GameModel model) {
+        this.model = model;
+        this.body = createBody();
         this.body.setUserData(this);
     }
 
-    protected static int getNextId() {
-        return nextId++;
-    }
-
-    public int getId() {
-        return id;
-    }
+    protected abstract Body createBody();
 
     public abstract void update(float delta);
 
@@ -41,6 +29,14 @@ public abstract class Entity {
     public abstract void onCollisionEnter(Entity other, Object data);
 
     public abstract void onCollisionExit(Entity other, Object data);
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public Body getBody() {
         return body;
@@ -62,6 +58,10 @@ public abstract class Entity {
         return body.getPosition();
     }
 
+    public void setPosition(float x, float y) {
+        body.setTransform(x, y, body.getAngle());
+    }
+
     public float getExplosionResistance() {
         return 1.0f;
     }
@@ -74,9 +74,8 @@ public abstract class Entity {
         removed = true;
     }
 
-    protected void serializeEntity(DataOutputStream out) throws IOException {
+    public void serialize(DataOutputStream out) throws IOException {
         out.writeInt(id);
-        out.writeBoolean(removed);
         out.writeFloat(body.getPosition().x);
         out.writeFloat(body.getPosition().y);
         out.writeFloat(body.getAngle());
@@ -85,33 +84,18 @@ public abstract class Entity {
         out.writeFloat(body.getAngularVelocity());
     }
 
-    protected static EntityState deserializeEntity(DataInputStream in) throws IOException {
+    public void deserialize(DataInputStream in) throws IOException {
         int id = in.readInt();
-        boolean removed = in.readBoolean();
         float x = in.readFloat();
         float y = in.readFloat();
         float angle = in.readFloat();
         float velocityX = in.readFloat();
         float velocityY = in.readFloat();
         float angularVelocity = in.readFloat();
-        return new EntityState(id, removed, x, y, angle, velocityX, velocityY, angularVelocity);
-    }
 
-    protected void applyState(EntityState state) {
-        body.setTransform(state.x(), state.y(), state.angle());
-        body.setLinearVelocity(state.velocityX(), state.velocityY());
-        body.setAngularVelocity(state.angularVelocity());
-    }
-
-    protected record EntityState(
-            int id,
-            boolean removed,
-            float x,
-            float y,
-            float angle,
-            float velocityX,
-            float velocityY,
-            float angularVelocity
-    ) {
+        setId(id);
+        body.setTransform(x, y, angle);
+        body.setLinearVelocity(velocityX, velocityY);
+        body.setAngularVelocity(angularVelocity);
     }
 }

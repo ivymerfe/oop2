@@ -25,7 +25,6 @@ public class Enemy extends Entity {
     private static final float SELF_DESTRUCT_DAMAGE = 40.0f;
     private static final float SELF_DESTRUCT_TIME = 1.0f;
 
-    private final GameModel model;
     private float lookDirection = -1.0f;
     private float health = 100.0f;
     private float shootCooldown = 0.6f;
@@ -35,20 +34,13 @@ public class Enemy extends Entity {
     private int headBlockContacts = 0;
     private boolean selfDestructTriggered = false;
 
-    public Enemy(GameModel model, float x, float y) {
-        this(model, x, y, null);
+    public Enemy(GameModel model) {
+        super(model);
     }
 
-    private Enemy(GameModel model, float x, float y, EntityState state) {
-        super(createEnemyBody(model, x, y), state == null ? getNextId() : state.id());
-        this.model = model;
-        if (state != null) {
-            applyState(state);
-        }
-    }
-
-    private static Body createEnemyBody(GameModel model, float x, float y) {
-        Body body = BodyHelper.createBody(model.getWorld(), BodyDef.BodyType.DynamicBody, x, y, true, false);
+    @Override
+    protected Body createBody() {
+        Body body = BodyHelper.createBody(model.getWorld(), BodyDef.BodyType.DynamicBody, 0, 0, true, false);
         BodyHelper.createBox(body, WIDTH, HEIGHT, 1.2f, 0.4f, 0.0f, false, null, null);
         BodyHelper.createBox(body, WIDTH / 1.2f, 0.12f, 0.0f, 0.0f, 0.0f, true,
                 new Vector2(0.0f, -HEIGHT / 2.0f), Sensors.EnemyFoot);
@@ -124,11 +116,11 @@ public class Enemy extends Entity {
             return;
         }
 
-        Vector2 spawn = getPosition().cpy().add(lookDirection * (WIDTH + Bullet.RADIUS), HEIGHT * 0.05f);
-        Vector2 inheritedVelocity = getBody().getLinearVelocity().cpy().scl(0.35f);
-        Vector2 direction = computeAimDirection(player, spawn, inheritedVelocity);
+        Vector2 pos = getPosition().cpy().add(lookDirection * (WIDTH + Bullet.RADIUS), HEIGHT * 0.05f);
+        Vector2 vel = getBody().getLinearVelocity().cpy().scl(0.35f);
+        Vector2 dir = computeAimDirection(player, pos, vel);
 
-        model.addBullet(this, spawn, spawn.cpy().add(direction), inheritedVelocity);
+        model.addBullet(pos.x, pos.y, dir, vel, this);
         shootCooldown = SHOOT_COOLDOWN + 0.35f * (float) Math.abs(Math.sin(model.getTime() + id));
     }
 
@@ -237,19 +229,15 @@ public class Enemy extends Entity {
         return HEIGHT;
     }
 
+    @Override
     public void serialize(DataOutputStream out) throws IOException {
-        serializeEntity(out);
+        super.serialize(out);
         out.writeFloat(health);
-        out.writeFloat(lastContactTime);
-        out.writeBoolean(selfDestructTriggered);
     }
 
-    public static Enemy deserialize(GameModel model, DataInputStream in) throws IOException {
-        EntityState state = deserializeEntity(in);
-        Enemy enemy = new Enemy(model, state.x(), state.y(), state);
-        enemy.health = in.readFloat();
-        enemy.lastContactTime = in.readFloat();
-        enemy.selfDestructTriggered = in.readBoolean();
-        return enemy;
+    @Override
+    public void deserialize(DataInputStream in) throws IOException {
+        super.deserialize(in);
+        health = in.readFloat();
     }
 }
