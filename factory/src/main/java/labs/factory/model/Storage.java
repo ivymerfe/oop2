@@ -4,32 +4,31 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Storage {
-    List<Item> items = new LinkedList<>();
-    int capacity;
-    int freeSpace;
+    private final List<Item> items = new LinkedList<>();
+    private int freeSpace;
+    private Runnable itemTakenListener;
 
     public Storage(int capacity) {
-        this.capacity = capacity;
         this.freeSpace = capacity;
-    }
-
-    public int getCapacity() {
-        return capacity;
     }
 
     public synchronized int getFreeSpace() {
         return freeSpace;
     }
 
-    public synchronized boolean hasItem() {
-        return !items.isEmpty();
+    public synchronized int getItemCount() {
+        return items.size();
+    }
+
+    public synchronized void setItemTakenListener(Runnable itemTakenListener) {
+        this.itemTakenListener = itemTakenListener;
     }
 
     public synchronized void addItem(Item item) throws InterruptedException {
-        while (freeSpace < item.getSize()) {
+        while (freeSpace == 0) {
             wait();
         }
-        freeSpace -= item.getSize();
+        freeSpace -= 1;
         items.add(item);
         notifyAll();
     }
@@ -39,8 +38,11 @@ public class Storage {
             wait();
         }
         Item item = items.removeLast();
-        freeSpace += item.getSize();
+        freeSpace += 1;
         notifyAll();
+        if (itemTakenListener != null) {
+            itemTakenListener.run();
+        }
         return item;
     }
 }

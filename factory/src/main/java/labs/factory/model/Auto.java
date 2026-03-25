@@ -1,15 +1,27 @@
 package labs.factory.model;
 
 public class Auto extends Item {
-    Carcase carcase;
-    Engine engine;
-    Accessory accessory;
+    private final Carcase carcase;
+    private final Engine engine;
+    private final Accessory accessory;
 
     public Auto(Carcase carcase, Engine engine, Accessory accessory) {
-        super(ItemType.Auto, carcase.getSize() + engine.getSize() + accessory.getSize());
+        super(ItemType.Auto);
         this.carcase = carcase;
         this.engine = engine;
         this.accessory = accessory;
+    }
+
+    public Carcase getCarcase() {
+        return carcase;
+    }
+
+    public Engine getEngine() {
+        return engine;
+    }
+
+    public Accessory getAccessory() {
+        return accessory;
     }
 
     @Override

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN" monitorInterval="30">
     <Properties>
-        <Property name="logFile">calculator.log</Property>
+        <Property name="logFile">factory.log</Property>
         <Property name="pattern">%d{HH:mm:ss} %-5level %c - %msg%n</Property>
     </Properties>
 

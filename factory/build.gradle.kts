@@ -23,7 +23,7 @@ tasks.withType<JavaCompile> {
 
 application {
     mainModule.set("labs.factory")
-    mainClass.set("labs.factory.HelloApplication")
+    mainClass.set("labs.factory.FactoryApp")
 }
 
 javafx {

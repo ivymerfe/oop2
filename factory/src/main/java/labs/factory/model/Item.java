@@ -3,28 +3,18 @@ package labs.factory.model;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Item {
-    static AtomicInteger globalId;
+    private static final AtomicInteger globalId = new AtomicInteger(0);
 
-    private ItemType type;
-    private int id;
-    private int size;
+    private final ItemType type;
+    private final int id;
 
-    public Item(ItemType type, int size) {
+    public Item(ItemType type) {
         this.type = type;
-        this.size = size;
         this.id = globalId.incrementAndGet();
-    }
-
-    public ItemType getType() {
-        return type;
     }
 
     public int getId() {
         return id;
-    }
-
-    public int getSize() {
-        return size;
     }
 
     @Override
