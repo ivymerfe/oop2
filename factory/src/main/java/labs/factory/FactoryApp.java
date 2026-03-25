@@ -15,6 +15,7 @@ public class FactoryApp extends Application {
 
         FXMLLoader fxmlLoader = new FXMLLoader(FactoryApp.class.getResource("main-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         stage.setTitle("Hello!");
         stage.setScene(scene);
         stage.show();

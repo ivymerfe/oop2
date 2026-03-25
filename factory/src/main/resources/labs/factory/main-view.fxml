@@ -1,16 +1,103 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
 
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="labs.factory.AppController">
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="labs.factory.AppController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+        <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
+    <left>
+        <VBox spacing="20">
+            <GridPane hgap="10" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="30"/>
+                    <ColumnConstraints percentWidth="30"/>
+                    <ColumnConstraints percentWidth="40"/>
+                </columnConstraints>
 
-    <Label fx:id="welcomeText"/>
-    <Button text="Hello!" onAction="#onHelloButtonClick"/>
-</VBox>
+                <Label text="Размер каркаса:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="bodySize" text="100" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Размер мотора:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="motorSize" text="100" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Размер аксессуаров:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="accessorySize" text="100" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Поставщики каркасов:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="bodySuppliers" text="2" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                <Slider fx:id="bodySupplierSpeed" min="100" max="10000" value="500"
+                        majorTickUnit="100" showTickLabels="true" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+
+                <Label text="Поставщики двигателей:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <TextField fx:id="engineSuppliers" text="3" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                <Slider fx:id="engineSupplierSpeed" min="100" max="10000" value="1000"
+                        majorTickUnit="100" showTickLabels="true" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+
+                <Label text="Поставщики аксессуаров:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <TextField fx:id="accessorySuppliers" text="1" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                <Slider fx:id="accessorySupplierSpeed" min="100" max="10000" value="800"
+                        majorTickUnit="100" showTickLabels="true" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
+
+                <Label text="Рабочие:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                <TextField fx:id="workerCount" text="5" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                <Slider fx:id="workerSpeed" min="100" max="10000" value="2000"
+                        majorTickUnit="100" showTickLabels="true" GridPane.rowIndex="6" GridPane.columnIndex="2"/>
+
+                <Label text="Диллеры:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                <TextField fx:id="dealerCount" text="4" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                <Slider fx:id="dealerSpeed" min="100" max="10000" value="1000"
+                        majorTickUnit="100" showTickLabels="true" GridPane.rowIndex="7" GridPane.columnIndex="2"/>
+
+            </GridPane>
+            <HBox spacing="10">
+                <Button text="Начать" onAction="#startFactory"/>
+                <Button text="Остановить" onAction="#stopFactory"/>
+            </HBox>
+        </VBox>
+    </left>
+    <center>
+        <GridPane hgap="10" vgap="10">
+            <padding>
+                <Insets left="20"/>
+            </padding>
+            <Label text="Склад каркасов" GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+            <Label text="Количество:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <Label fx:id="carcaseCount" text="0" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <Label text="Свободно:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <Label fx:id="carcaseFreeSpace" text="0" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <Label text="Склад двигателей" GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+            <Label text="Количество:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <Label fx:id="engineCount" text="0" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+            <Label text="Свободно:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <Label fx:id="engineFreeSpace" text="0" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+            <Label text="Склад аксессуаров" GridPane.rowIndex="8" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+            <Label text="Количество:" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+            <Label fx:id="accessoryCount" text="0" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+            <Label text="Свободно:" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
+            <Label fx:id="accessoryFreeSpace" text="0" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
+
+            <Label text="Склад автомобилей" GridPane.rowIndex="12" GridPane.columnIndex="0" GridPane.columnSpan="2"/>
+            <Label text="Количество:" GridPane.rowIndex="13" GridPane.columnIndex="0"/>
+            <Label fx:id="autoCount" text="0" GridPane.rowIndex="13" GridPane.columnIndex="1"/>
+            <Label text="Свободно:" GridPane.rowIndex="14" GridPane.columnIndex="0"/>
+            <Label fx:id="autoFreeSpace" text="0" GridPane.rowIndex="14" GridPane.columnIndex="1"/>
+
+            <Label text="Произведено автомобилей:" GridPane.rowIndex="17" GridPane.columnIndex="0"/>
+            <Label fx:id="autoProduced" text="0" GridPane.rowIndex="17" GridPane.columnIndex="1"/>
+
+            <Label text="Задач в очереди:" GridPane.rowIndex="18" GridPane.columnIndex="0"/>
+            <Label fx:id="tasksInQueue" text="0" GridPane.rowIndex="18" GridPane.columnIndex="1"/>
+        </GridPane>
+    </center>
+    <right>
+        <VBox prefWidth="600">
+            <Label text="Лог"/>
+            <TextArea fx:id="logArea" prefHeight="800" wrapText="true" editable="false"/>
+        </VBox>
+    </right>
+</BorderPane>
