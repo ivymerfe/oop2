@@ -27,7 +27,6 @@ public class Supplier extends Thread {
         }
         while (!isInterrupted()) {
             try {
-                Thread.sleep(delaySupplier.getAsInt());
                 Item item = switch (itemType) {
                     case Carcase -> new Carcase();
                     case Engine -> new Engine();
@@ -35,6 +34,7 @@ public class Supplier extends Thread {
                     default -> throw new RuntimeException("bad item");
                 };
                 this.storage.addItem(item);
+                Thread.sleep(delaySupplier.getAsInt());
             } catch (InterruptedException e) {
                 interrupt();
                 break;

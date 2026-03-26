@@ -18,40 +18,40 @@
                 </columnConstraints>
 
                 <Label text="Склад каркасов:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                <TextField fx:id="carcaseSize" text="100" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                <TextField fx:id="carcaseStorageSize" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
                 <Label text="Склад моторов:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                <TextField fx:id="motorSize" text="100" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                <TextField fx:id="motorStorageSize" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
                 <Label text="Склад аксессуаров:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                <TextField fx:id="accessorySize" text="100" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                <TextField fx:id="accessoryStorageSize" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
                 <Label text="Склад авто:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                <TextField fx:id="autoSize" text="100" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                <TextField fx:id="autoStorageSize" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
                 <Label text="Поставщики каркасов:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                <TextField fx:id="bodySuppliers" text="2" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-                <Slider fx:id="bodySupplierSpeed" min="100" max="10000" value="500"
+                <TextField fx:id="carcaseSupplierCount" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                <Slider fx:id="carcaseSupplierDelay" min="100" max="10000" value="500"
                         majorTickUnit="100" showTickLabels="true" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
 
                 <Label text="Поставщики двигателей:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-                <TextField fx:id="engineSuppliers" text="3" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-                <Slider fx:id="engineSupplierSpeed" min="100" max="10000" value="1000"
+                <TextField fx:id="engineSuppliers" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                <Slider fx:id="engineSupplierDelay" min="100" max="10000" value="1000"
                         majorTickUnit="100" showTickLabels="true" GridPane.rowIndex="5" GridPane.columnIndex="2"/>
 
                 <Label text="Поставщики аксессуаров:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-                <TextField fx:id="accessorySuppliers" text="1" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-                <Slider fx:id="accessorySupplierSpeed" min="100" max="10000" value="800"
+                <TextField fx:id="accessorySuppliers" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+                <Slider fx:id="accessorySupplierDelay" min="100" max="10000" value="800"
                         majorTickUnit="100" showTickLabels="true" GridPane.rowIndex="6" GridPane.columnIndex="2"/>
 
                 <Label text="Рабочие:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-                <TextField fx:id="workerCount" text="5" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
-                <Slider fx:id="workerSpeed" min="100" max="10000" value="2000"
+                <TextField fx:id="workerCount" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+                <Slider fx:id="workerDelay" min="100" max="10000" value="2000"
                         majorTickUnit="100" showTickLabels="true" GridPane.rowIndex="7" GridPane.columnIndex="2"/>
 
                 <Label text="Диллеры:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
-                <TextField fx:id="dealerCount" text="4" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
-                <Slider fx:id="dealerSpeed" min="100" max="10000" value="1000"
+                <TextField fx:id="dealerCount" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
+                <Slider fx:id="dealerDelay" min="100" max="10000" value="1000"
                         majorTickUnit="100" showTickLabels="true" GridPane.rowIndex="8" GridPane.columnIndex="2"/>
 
             </GridPane>

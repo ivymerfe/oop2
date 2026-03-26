@@ -3,124 +3,78 @@ package labs.factory;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.util.Duration;
 import labs.factory.controller.Factory;
+import labs.factory.model.FactoryConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class AppController {
     private static final Logger logger = LogManager.getLogger(AppController.class);
 
-    @FXML
-    public TextField carcaseSize;
-    @FXML
-    public TextField motorSize;
-    @FXML
-    public TextField accessorySize;
-    @FXML
-    public TextField autoSize;
+    public TextField carcaseStorageSize;
+    public TextField motorStorageSize;
+    public TextField accessoryStorageSize;
+    public TextField autoStorageSize;
 
-    @FXML
     public TextArea logArea;
-    @FXML
-    public TextField bodySuppliers;
-    @FXML
-    public Slider bodySupplierSpeed;
-    @FXML
+    public TextField carcaseSupplierCount;
+    public Slider carcaseSupplierDelay;
     public TextField engineSuppliers;
-    @FXML
-    public Slider engineSupplierSpeed;
-    @FXML
+    public Slider engineSupplierDelay;
     public TextField accessorySuppliers;
-    @FXML
-    public Slider accessorySupplierSpeed;
-    @FXML
+    public Slider accessorySupplierDelay;
     public TextField workerCount;
-    @FXML
-    public Slider workerSpeed;
-    @FXML
+    public Slider workerDelay;
     public TextField dealerCount;
-    @FXML
-    public Slider dealerSpeed;
+    public Slider dealerDelay;
 
-    @FXML
     public Label carcaseCount;
-    @FXML
     public Label carcaseFreeSpace;
-    @FXML
     public Label engineCount;
-    @FXML
     public Label engineFreeSpace;
-    @FXML
     public Label accessoryCount;
-    @FXML
     public Label accessoryFreeSpace;
-    @FXML
     public Label autoCount;
-    @FXML
     public Label autoFreeSpace;
-    @FXML
     public Label autoProduced;
-    @FXML
     public Label autoSold;
-    @FXML
     public Label tasksInQueue;
 
+    private final FactoryConfig config = new FactoryConfig();
     private Factory factory;
     private Timeline uiTimer;
 
-    @FXML
     public void initialize() {
-        updateStats();
+        carcaseStorageSize.setText(String.valueOf(config.carcaseStorageSize));
+        motorStorageSize.setText(String.valueOf(config.engineStorageSize));
+        accessoryStorageSize.setText(String.valueOf(config.accessoryStorageSize));
+        autoStorageSize.setText(String.valueOf(config.autoStorageSize));
+        carcaseSupplierCount.setText(String.valueOf(config.carcaseSupplierCount));
+        engineSuppliers.setText(String.valueOf(config.engineSuppliersCount));
+        accessorySuppliers.setText(String.valueOf(config.accessorySuppliersCount));
+        workerCount.setText(String.valueOf(config.workersCount));
+        dealerCount.setText(String.valueOf(config.dealersCount));
+        updateUi();
     }
 
-
-    @FXML
     public void startFactory() {
         stopFactory();
 
-        int bodyStorage = parseOrDefault(carcaseSize.getText(), 100);
-        int engineStorage = parseOrDefault(motorSize.getText(), 100);
-        int accessoryStorage = parseOrDefault(accessorySize.getText(), 100);
-        int autoStorage = parseOrDefault(autoSize.getText(), 100);
+        readUi();
 
-        int bodySuppliersCount = parseOrDefault(bodySuppliers.getText(), 2);
-        int engineSuppliersCount = parseOrDefault(engineSuppliers.getText(), 2);
-        int accessorySuppliersCount = parseOrDefault(accessorySuppliers.getText(), 2);
-        int workers = parseOrDefault(workerCount.getText(), 5);
-        int dealers = parseOrDefault(dealerCount.getText(), 4);
-
-        factory = new Factory(
-                bodyStorage,
-                engineStorage,
-                accessoryStorage,
-                autoStorage,
-                bodySuppliersCount,
-                engineSuppliersCount,
-                accessorySuppliersCount,
-                workers,
-                dealers,
-                () -> (int) bodySupplierSpeed.getValue(),
-                () -> (int) engineSupplierSpeed.getValue(),
-                () -> (int) accessorySupplierSpeed.getValue(),
-                () -> (int) workerSpeed.getValue(),
-                () -> (int) dealerSpeed.getValue(),
-                this::appendSaleLog
-        );
-
+        factory = new Factory(config, this::appendSaleLog);
         factory.start();
 
-        uiTimer = new Timeline(new KeyFrame(Duration.millis(200), event -> updateStats()));
+        uiTimer = new Timeline(new KeyFrame(Duration.millis(200), event -> updateUi()));
         uiTimer.setCycleCount(Timeline.INDEFINITE);
         uiTimer.play();
     }
 
-    @FXML
     public void stopFactory() {
         if (uiTimer != null) {
             uiTimer.stop();
@@ -134,7 +88,7 @@ public class AppController {
             }
             factory = null;
         }
-        updateStats();
+        updateUi();
     }
 
     private void appendSaleLog(String line) {
@@ -144,10 +98,34 @@ public class AppController {
         });
     }
 
-    private void updateStats() {
+    private void readUi() {
+        config.carcaseStorageSize = parseOrDefault(carcaseStorageSize.getText(), config.carcaseStorageSize);
+        config.engineStorageSize = parseOrDefault(motorStorageSize.getText(), config.engineStorageSize);
+        config.accessoryStorageSize = parseOrDefault(accessoryStorageSize.getText(), config.accessoryStorageSize);
+        config.autoStorageSize = parseOrDefault(autoStorageSize.getText(), config.autoStorageSize);
+
+        config.carcaseSupplierCount = parseOrDefault(carcaseSupplierCount.getText(), config.carcaseSupplierCount);
+        config.engineSuppliersCount = parseOrDefault(engineSuppliers.getText(), config.engineSuppliersCount);
+        config.accessorySuppliersCount = parseOrDefault(accessorySuppliers.getText(), config.accessorySuppliersCount);
+        config.workersCount = parseOrDefault(workerCount.getText(), config.workersCount);
+        config.dealersCount = parseOrDefault(dealerCount.getText(), config.dealerDelay);
+
+        updateDelays();
+    }
+
+    private void updateDelays() {
+        config.carcaseDelay = (int) carcaseSupplierDelay.getValue();
+        config.engineDelay = (int) engineSupplierDelay.getValue();
+        config.accessoryDelay = (int) accessorySupplierDelay.getValue();
+        config.workerDelay = (int) workerDelay.getValue();
+        config.dealerDelay = (int) dealerDelay.getValue();
+    }
+
+    private void updateUi() {
         if (factory == null) {
             return;
         }
+        updateDelays();
         setLabel(carcaseCount, factory.getCarcaseStorage().getItemCount());
         setLabel(carcaseFreeSpace, factory.getCarcaseStorage().getFreeSpace());
         setLabel(engineCount, factory.getEngineStorage().getItemCount());

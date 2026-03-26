@@ -31,11 +31,11 @@ public class Dealer extends Thread {
         }
         while (!isInterrupted()) {
             try {
-                Thread.sleep(delaySupplier.getAsInt());
                 Auto auto = (Auto) autoStorage.takeItem();
                 if (onSale != null) {
                     onSale.accept(this, auto);
                 }
+                Thread.sleep(delaySupplier.getAsInt());
             } catch (InterruptedException e) {
                 interrupt();
                 break;
