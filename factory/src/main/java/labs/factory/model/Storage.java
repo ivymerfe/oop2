@@ -6,7 +6,8 @@ import java.util.List;
 public class Storage {
     private final List<Item> items = new LinkedList<>();
     private int freeSpace;
-    private Runnable itemTakenListener;
+
+    private final Object takeLock = new Object();
 
     public Storage(int capacity) {
         this.freeSpace = capacity;
@@ -20,8 +21,10 @@ public class Storage {
         return items.size();
     }
 
-    public synchronized void setItemTakenListener(Runnable itemTakenListener) {
-        this.itemTakenListener = itemTakenListener;
+    public void waitForTake() throws InterruptedException {
+        synchronized (takeLock) {
+            takeLock.wait();
+        }
     }
 
     public synchronized void addItem(Item item) throws InterruptedException {
@@ -40,8 +43,8 @@ public class Storage {
         Item item = items.removeLast();
         freeSpace += 1;
         notifyAll();
-        if (itemTakenListener != null) {
-            itemTakenListener.run();
+        synchronized (takeLock) {
+            takeLock.notifyAll();
         }
         return item;
     }

@@ -63,10 +63,6 @@ public class Factory {
         this.logConsumer = logConsumer;
     }
 
-    public synchronized boolean isRunning() {
-        return running;
-    }
-
     public synchronized void start() {
         if (running) {
             return;
@@ -74,8 +70,6 @@ public class Factory {
         running = true;
         builtAutos.set(0);
         soldAutos.set(0);
-
-        autoStorage.setItemTakenListener(this::refillTasks);
 
         for (int i = 0; i < carcaseSupplierCount; i++) {
             Supplier supplier = new Supplier(carcaseStorage, ItemType.Carcase, bodyDelaySupplier);
@@ -102,6 +96,8 @@ public class Factory {
                 100000, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<>()
         );
+        storageController = new Thread(this::storageControllerThread);
+        storageController.start();
 
         refillTasks();
     }
@@ -111,7 +107,6 @@ public class Factory {
             return;
         }
         running = false;
-        autoStorage.setItemTakenListener(null);
 
         for (Supplier supplier : suppliers) {
             supplier.interrupt();
@@ -122,12 +117,12 @@ public class Factory {
         if (storageController != null) {
             storageController.interrupt();
         }
+        workerPool.shutdownNow();
         joinAll(suppliers);
         joinAll(dealers);
-        workerPool.shutdownNow();
-        storageController.join();
         suppliers.clear();
         dealers.clear();
+        storageController.join();
         storageController = null;
     }
 
@@ -156,6 +151,17 @@ public class Factory {
 
         } finally {
             activeWorkers.decrementAndGet();
+            refillTasks();
+        }
+    }
+
+    public void storageControllerThread() {
+        while (running) {
+            try {
+                autoStorage.waitForTake();
+            } catch (InterruptedException e) {
+                break;
+            }
             refillTasks();
         }
     }
