@@ -4,5 +4,6 @@ public enum ItemType {
     Carcase,
     Engine,
     Accessory,
-    Auto
+    Auto,
+    Item,
 }

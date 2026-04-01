@@ -1,5 +1,8 @@
 package labs.factory.model;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,5 +50,29 @@ public class Storage {
             takeLock.notifyAll();
         }
         return item;
+    }
+
+    public void serialize(DataOutputStream out) throws IOException {
+        out.writeInt(items.size());
+        for (Item item : items) {
+            out.writeInt(item.getType().ordinal());
+            item.serialize(out);
+        }
+    }
+
+    public void deserialize(DataInputStream in) throws IOException {
+        int itemCount = in.readInt();
+        for (int i = 0; i < itemCount; i++) {
+            ItemType type = ItemType.values()[in.readInt()];
+            Item item = switch (type) {
+                case Carcase -> new Carcase(in);
+                case Accessory -> new Accessory(in);
+                case Engine -> new Engine(in);
+                case Auto -> new Auto(in);
+                case Item -> new Item(in);
+            };
+            items.add(item);
+            freeSpace -= 1;
+        }
     }
 }

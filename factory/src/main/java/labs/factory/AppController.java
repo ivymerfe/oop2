@@ -8,10 +8,19 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.util.Duration;
+import labs.factory.controller.Dealer;
 import labs.factory.controller.Factory;
+import labs.factory.model.Auto;
 import labs.factory.model.FactoryConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AppController {
     private static final Logger logger = LogManager.getLogger(AppController.class);
@@ -41,34 +50,63 @@ public class AppController {
     public Label accessoryFreeSpace;
     public Label autoCount;
     public Label autoFreeSpace;
-    public Label autoProduced;
     public Label autoSold;
     public Label tasksInQueue;
 
+    private static final Path SAVE_PATH = Path.of("factory.bin");
+
+    private final AtomicInteger soldAutos = new AtomicInteger(0);
     private final FactoryConfig config = new FactoryConfig();
-    private Factory factory;
+    private final Factory factory = new Factory(config);
     private Timeline uiTimer;
 
     public void initialize() {
+        load();
+
         carcaseStorageSize.setText(String.valueOf(config.carcaseStorageSize));
         motorStorageSize.setText(String.valueOf(config.engineStorageSize));
         accessoryStorageSize.setText(String.valueOf(config.accessoryStorageSize));
         autoStorageSize.setText(String.valueOf(config.autoStorageSize));
         carcaseSupplierCount.setText(String.valueOf(config.carcaseSupplierCount));
+        carcaseSupplierDelay.setValue(config.carcaseSupplierDelay);
         engineSuppliers.setText(String.valueOf(config.engineSuppliersCount));
+        engineSupplierDelay.setValue(config.engineSupplierDelay);
         accessorySuppliers.setText(String.valueOf(config.accessorySuppliersCount));
+        accessorySupplierDelay.setValue(config.accessorySupplierDelay);
         workerCount.setText(String.valueOf(config.workersCount));
+        workerDelay.setValue(config.workerDelay);
         dealerCount.setText(String.valueOf(config.dealersCount));
+        dealerDelay.setValue(config.dealerDelay);
         updateUi();
     }
 
-    public void startFactory() {
-        stopFactory();
+    public void load() {
+        if (!Files.exists(SAVE_PATH)) {
+            return;
+        }
+        try (InputStream stream = Files.newInputStream(SAVE_PATH)) {
+            DataInputStream in = new DataInputStream(stream);
+            config.deserialize(in);
+            factory.deserialize(in);
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
 
+    public void save() {
+        try (OutputStream stream = Files.newOutputStream(SAVE_PATH)) {
+            DataOutputStream out = new DataOutputStream(stream);
+            config.serialize(out);
+            factory.serialize(out);
+        } catch (IOException e) {
+            logger.error(e);
+        }
+    }
+
+    public void startFactory() {
         readUi();
 
-        factory = new Factory(config, this::appendSaleLog);
-        factory.start();
+        factory.start(this::onSale);
 
         uiTimer = new Timeline(new KeyFrame(Duration.millis(200), event -> updateUi()));
         uiTimer.setCycleCount(Timeline.INDEFINITE);
@@ -76,22 +114,22 @@ public class AppController {
     }
 
     public void stopFactory() {
+        try {
+            factory.stop();
+        } catch (InterruptedException e) {
+            logger.error(e);
+        }
         if (uiTimer != null) {
             uiTimer.stop();
             uiTimer = null;
         }
-        if (factory != null) {
-            try {
-                factory.stop();
-            } catch (InterruptedException e) {
-                logger.error(e);
-            }
-            factory = null;
-        }
-        updateUi();
+        save();
     }
 
-    private void appendSaleLog(String line) {
+    private void onSale(Dealer dealer, Auto auto) {
+        soldAutos.incrementAndGet();
+        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
+        String line = time + ": " + dealer + " -> " + auto;
         logger.info(line);
         Platform.runLater(() -> {
             logArea.appendText(line + System.lineSeparator());
@@ -114,17 +152,14 @@ public class AppController {
     }
 
     private void updateDelays() {
-        config.carcaseDelay = (int) carcaseSupplierDelay.getValue();
-        config.engineDelay = (int) engineSupplierDelay.getValue();
-        config.accessoryDelay = (int) accessorySupplierDelay.getValue();
+        config.carcaseSupplierDelay = (int) carcaseSupplierDelay.getValue();
+        config.engineSupplierDelay = (int) engineSupplierDelay.getValue();
+        config.accessorySupplierDelay = (int) accessorySupplierDelay.getValue();
         config.workerDelay = (int) workerDelay.getValue();
         config.dealerDelay = (int) dealerDelay.getValue();
     }
 
     private void updateUi() {
-        if (factory == null) {
-            return;
-        }
         updateDelays();
         setLabel(carcaseCount, factory.getCarcaseStorage().getItemCount());
         setLabel(carcaseFreeSpace, factory.getCarcaseStorage().getFreeSpace());
@@ -134,8 +169,7 @@ public class AppController {
         setLabel(accessoryFreeSpace, factory.getAccessoryStorage().getFreeSpace());
         setLabel(autoCount, factory.getAutoStorage().getItemCount());
         setLabel(autoFreeSpace, factory.getAutoStorage().getFreeSpace());
-        setLabel(autoProduced, factory.getBuiltAutos());
-        setLabel(autoSold, factory.getSoldAutos());
+        setLabel(autoSold, soldAutos.get());
         setLabel(tasksInQueue, factory.getTaskCount());
     }
 

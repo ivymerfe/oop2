@@ -2,25 +2,24 @@ package labs.factory.controller;
 
 import labs.factory.model.*;
 
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class Factory {
     private final FactoryConfig config;
 
-    private final Storage engineStorage;
     private final Storage carcaseStorage;
+    private final Storage engineStorage;
     private final Storage accessoryStorage;
     private final Storage autoStorage;
-
-    private final Consumer<String> logConsumer;
 
     private final List<Supplier> suppliers = new ArrayList<>();
     private final List<Dealer> dealers = new ArrayList<>();
@@ -29,45 +28,38 @@ public class Factory {
     private final AtomicInteger activeWorkers = new AtomicInteger(0);
 
     private Thread storageController;
-    private volatile boolean running;
+    private boolean running;
 
-    private final AtomicInteger builtAutos = new AtomicInteger(0);
-    private final AtomicInteger soldAutos = new AtomicInteger(0);
-
-    public Factory(FactoryConfig config, Consumer<String> logConsumer) {
+    public Factory(FactoryConfig config) {
         this.config = config;
         this.engineStorage = new Storage(config.engineStorageSize);
         this.carcaseStorage = new Storage(config.carcaseStorageSize);
         this.accessoryStorage = new Storage(config.accessoryStorageSize);
         this.autoStorage = new Storage(config.autoStorageSize);
-        this.logConsumer = logConsumer;
     }
 
-    public synchronized void start() {
+    public synchronized void start(BiConsumer<Dealer, Auto> onSale) {
         if (running) {
             return;
         }
         running = true;
-        builtAutos.set(0);
-        soldAutos.set(0);
-
         for (int i = 0; i < config.carcaseSupplierCount; i++) {
-            Supplier supplier = new Supplier(carcaseStorage, ItemType.Carcase, () -> config.carcaseDelay);
+            Supplier supplier = new Supplier(carcaseStorage, ItemType.Carcase, () -> config.carcaseSupplierDelay);
             suppliers.add(supplier);
             supplier.start();
         }
         for (int i = 0; i < config.engineSuppliersCount; i++) {
-            Supplier supplier = new Supplier(engineStorage, ItemType.Engine, () -> config.engineDelay);
+            Supplier supplier = new Supplier(engineStorage, ItemType.Engine, () -> config.engineSupplierDelay);
             suppliers.add(supplier);
             supplier.start();
         }
         for (int i = 0; i < config.accessorySuppliersCount; i++) {
-            Supplier supplier = new Supplier(accessoryStorage, ItemType.Accessory, () -> config.accessoryDelay);
+            Supplier supplier = new Supplier(accessoryStorage, ItemType.Accessory, () -> config.accessorySupplierDelay);
             suppliers.add(supplier);
             supplier.start();
         }
         for (int i = 0; i < config.dealersCount; i++) {
-            Dealer dealer = new Dealer(i, autoStorage, () -> config.dealerDelay, this::onAutoSold);
+            Dealer dealer = new Dealer(i, autoStorage, () -> config.dealerDelay, onSale);
             dealers.add(dealer);
             dealer.start();
         }
@@ -98,8 +90,12 @@ public class Factory {
             storageController.interrupt();
         }
         workerPool.shutdownNow();
-        joinAll(suppliers);
-        joinAll(dealers);
+        for (Supplier sup : suppliers) {
+            sup.join();
+        }
+        for (Dealer dealer : dealers) {
+            dealer.join();
+        }
         suppliers.clear();
         dealers.clear();
         storageController.join();
@@ -126,7 +122,6 @@ public class Factory {
             Thread.sleep(config.workerDelay);
             Auto auto = new Auto(carcase, engine, accessory);
             autoStorage.addItem(auto);
-            builtAutos.incrementAndGet();
         } catch (InterruptedException ignored) {
 
         } finally {
@@ -162,28 +157,21 @@ public class Factory {
         return autoStorage;
     }
 
-    private void onAutoSold(Dealer dealer, Auto auto) {
-        soldAutos.incrementAndGet();
-        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-        String line = time + ": " + dealer + " -> " + auto;
-        logConsumer.accept(line);
-    }
-
-    public synchronized int getBuiltAutos() {
-        return builtAutos.get();
-    }
-
-    public synchronized int getSoldAutos() {
-        return soldAutos.get();
-    }
-
     public int getTaskCount() {
         return activeWorkers.get();
     }
 
-    private void joinAll(List<? extends Thread> threads) throws InterruptedException {
-        for (Thread thread : threads) {
-            thread.join();
-        }
+    public void serialize(DataOutputStream out) throws IOException {
+        carcaseStorage.serialize(out);
+        engineStorage.serialize(out);
+        accessoryStorage.serialize(out);
+        autoStorage.serialize(out);
+    }
+
+    public void deserialize(DataInputStream in) throws IOException {
+        carcaseStorage.deserialize(in);
+        engineStorage.deserialize(in);
+        accessoryStorage.deserialize(in);
+        autoStorage.deserialize(in);
     }
 }

@@ -12,10 +12,10 @@ public class FactoryApp extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
-
         FXMLLoader fxmlLoader = new FXMLLoader(FactoryApp.class.getResource("main-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 800, 600);
         AppController controller = fxmlLoader.getController();
+
+        Scene scene = new Scene(fxmlLoader.load(), 800, 600);
         scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         stage.setTitle("Fucktory");
         stage.setScene(scene);
