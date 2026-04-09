@@ -1,10 +1,8 @@
 package labs.factory.model;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.Serializable;
 
-public class FactoryConfig {
+public class FactoryConfig implements Serializable {
     public int carcaseStorageSize = 10;
     public int engineStorageSize = 10;
     public int accessoryStorageSize = 10;
@@ -19,38 +17,4 @@ public class FactoryConfig {
     public int workerDelay = 2000;
     public int dealersCount = 4;
     public int dealerDelay = 8000;
-
-    public void serialize(DataOutputStream out) throws IOException {
-        out.writeInt(carcaseStorageSize);
-        out.writeInt(engineStorageSize);
-        out.writeInt(accessoryStorageSize);
-        out.writeInt(autoStorageSize);
-        out.writeInt(carcaseSupplierCount);
-        out.writeInt(carcaseSupplierDelay);
-        out.writeInt(engineSuppliersCount);
-        out.writeInt(engineSupplierDelay);
-        out.writeInt(accessorySuppliersCount);
-        out.writeInt(accessorySupplierDelay);
-        out.writeInt(workersCount);
-        out.writeInt(workerDelay);
-        out.writeInt(dealersCount);
-        out.writeInt(dealerDelay);
-    }
-
-    public void deserialize(DataInputStream in) throws IOException {
-        carcaseStorageSize = in.readInt();
-        engineStorageSize = in.readInt();
-        accessoryStorageSize = in.readInt();
-        autoStorageSize = in.readInt();
-        carcaseSupplierCount = in.readInt();
-        carcaseSupplierDelay = in.readInt();
-        engineSuppliersCount = in.readInt();
-        engineSupplierDelay = in.readInt();
-        accessorySuppliersCount = in.readInt();
-        accessorySupplierDelay = in.readInt();
-        workersCount = in.readInt();
-        workerDelay = in.readInt();
-        dealersCount = in.readInt();
-        dealerDelay = in.readInt();
-    }
 }

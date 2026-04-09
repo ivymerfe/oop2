@@ -56,51 +56,48 @@ public class AppController {
     private static final Path SAVE_PATH = Path.of("factory.bin");
 
     private final AtomicInteger soldAutos = new AtomicInteger(0);
-    private final FactoryConfig config = new FactoryConfig();
-    private final Factory factory = new Factory(config);
+    private FactoryConfig config = new FactoryConfig();
+    private Factory factory = new Factory(config);
     private Timeline uiTimer;
 
     public void initialize() {
-        load();
-
-        carcaseStorageSize.setText(String.valueOf(config.carcaseStorageSize));
-        motorStorageSize.setText(String.valueOf(config.engineStorageSize));
-        accessoryStorageSize.setText(String.valueOf(config.accessoryStorageSize));
-        autoStorageSize.setText(String.valueOf(config.autoStorageSize));
-        carcaseSupplierCount.setText(String.valueOf(config.carcaseSupplierCount));
-        carcaseSupplierDelay.setValue(config.carcaseSupplierDelay);
-        engineSuppliers.setText(String.valueOf(config.engineSuppliersCount));
-        engineSupplierDelay.setValue(config.engineSupplierDelay);
-        accessorySuppliers.setText(String.valueOf(config.accessorySuppliersCount));
-        accessorySupplierDelay.setValue(config.accessorySupplierDelay);
-        workerCount.setText(String.valueOf(config.workersCount));
-        workerDelay.setValue(config.workerDelay);
-        dealerCount.setText(String.valueOf(config.dealersCount));
-        dealerDelay.setValue(config.dealerDelay);
-        updateUi();
+        loadUi();
     }
 
-    public void load() {
+    public boolean load() {
         if (!Files.exists(SAVE_PATH)) {
-            return;
+            return false;
         }
         try (InputStream stream = Files.newInputStream(SAVE_PATH)) {
-            DataInputStream in = new DataInputStream(stream);
-            config.deserialize(in);
-            factory.deserialize(in);
+            ObjectInputStream in = new ObjectInputStream(stream);
+            config = (FactoryConfig) in.readObject();
+            stopFactory();
+            factory = new Factory(config, in);
+            loadUi();
+            return true;
         } catch (IOException e) {
             logger.error(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
+        return false;
     }
 
     public void save() {
         try (OutputStream stream = Files.newOutputStream(SAVE_PATH)) {
-            DataOutputStream out = new DataOutputStream(stream);
-            config.serialize(out);
+            ObjectOutputStream out = new ObjectOutputStream(stream);
+            out.writeObject(config);
             factory.serialize(out);
         } catch (IOException e) {
             logger.error(e);
         }
+    }
+
+    public void newFactory() {
+        stopFactory();
+        readUi();
+        factory = new Factory(config);
+        updateUi();
     }
 
     public void startFactory() {
@@ -123,17 +120,34 @@ public class AppController {
             uiTimer.stop();
             uiTimer = null;
         }
-        save();
     }
 
     private void onSale(Dealer dealer, Auto auto) {
         soldAutos.incrementAndGet();
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-        String line = time + ": " + dealer + " -> " + auto;
+        String line = time + ": " + dealer + ":\n" + auto;
         logger.info(line);
         Platform.runLater(() -> {
             logArea.appendText(line + System.lineSeparator());
         });
+    }
+
+    private void loadUi() {
+        carcaseStorageSize.setText(String.valueOf(config.carcaseStorageSize));
+        motorStorageSize.setText(String.valueOf(config.engineStorageSize));
+        accessoryStorageSize.setText(String.valueOf(config.accessoryStorageSize));
+        autoStorageSize.setText(String.valueOf(config.autoStorageSize));
+        carcaseSupplierCount.setText(String.valueOf(config.carcaseSupplierCount));
+        carcaseSupplierDelay.setValue(config.carcaseSupplierDelay);
+        engineSuppliers.setText(String.valueOf(config.engineSuppliersCount));
+        engineSupplierDelay.setValue(config.engineSupplierDelay);
+        accessorySuppliers.setText(String.valueOf(config.accessorySuppliersCount));
+        accessorySupplierDelay.setValue(config.accessorySupplierDelay);
+        workerCount.setText(String.valueOf(config.workersCount));
+        workerDelay.setValue(config.workerDelay);
+        dealerCount.setText(String.valueOf(config.dealersCount));
+        dealerDelay.setValue(config.dealerDelay);
+        updateUi();
     }
 
     private void readUi() {

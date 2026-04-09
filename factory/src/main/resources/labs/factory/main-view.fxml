@@ -59,6 +59,11 @@
                 <Button text="Старт" onAction="#startFactory"/>
                 <Button text="Стоп" onAction="#stopFactory"/>
             </HBox>
+            <HBox spacing="10">
+                <Button text="Загрузить" onAction="#load"/>
+                <Button text="Сохранить" onAction="#save"/>
+                <Button text="Новая" onAction="#newFactory"/>
+            </HBox>
         </VBox>
     </left>
     <center>

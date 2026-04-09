@@ -2,14 +2,11 @@ package labs.factory.controller;
 
 import labs.factory.model.*;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
@@ -24,18 +21,34 @@ public class Factory {
     private final List<Supplier> suppliers = new ArrayList<>();
     private final List<Dealer> dealers = new ArrayList<>();
 
-    private ThreadPoolExecutor workerPool;
+    private ThreadPool workerPool;
     private final AtomicInteger activeWorkers = new AtomicInteger(0);
 
-    private Thread storageController;
     private boolean running;
 
     public Factory(FactoryConfig config) {
         this.config = config;
-        this.engineStorage = new Storage(config.engineStorageSize);
         this.carcaseStorage = new Storage(config.carcaseStorageSize);
+        this.engineStorage = new Storage(config.engineStorageSize);
         this.accessoryStorage = new Storage(config.accessoryStorageSize);
         this.autoStorage = new Storage(config.autoStorageSize);
+        this.autoStorage.setTakeListener(this::refillTasks);
+    }
+
+    public Factory(FactoryConfig config, ObjectInputStream in) throws IOException, ClassNotFoundException {
+        this.config = config;
+        this.carcaseStorage = (Storage) in.readObject();
+        this.engineStorage = (Storage) in.readObject();
+        this.accessoryStorage = (Storage) in.readObject();
+        this.autoStorage = (Storage) in.readObject();
+        this.autoStorage.setTakeListener(this::refillTasks);
+    }
+
+    public void serialize(ObjectOutputStream out) throws IOException {
+        out.writeObject(carcaseStorage);
+        out.writeObject(engineStorage);
+        out.writeObject(accessoryStorage);
+        out.writeObject(autoStorage);
     }
 
     public synchronized void start(BiConsumer<Dealer, Auto> onSale) {
@@ -63,13 +76,7 @@ public class Factory {
             dealers.add(dealer);
             dealer.start();
         }
-        workerPool = new ThreadPoolExecutor(
-                config.workersCount, config.workersCount,
-                100000, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<>()
-        );
-        storageController = new Thread(this::storageControllerThread);
-        storageController.start();
+        workerPool = new ThreadPool(config.workersCount);
 
         refillTasks();
     }
@@ -86,10 +93,7 @@ public class Factory {
         for (Dealer dealer : dealers) {
             dealer.interrupt();
         }
-        if (storageController != null) {
-            storageController.interrupt();
-        }
-        workerPool.shutdownNow();
+        workerPool.stop();
         for (Supplier sup : suppliers) {
             sup.join();
         }
@@ -98,8 +102,6 @@ public class Factory {
         }
         suppliers.clear();
         dealers.clear();
-        storageController.join();
-        storageController = null;
     }
 
     private void refillTasks() {
@@ -130,17 +132,6 @@ public class Factory {
         }
     }
 
-    public void storageControllerThread() {
-        while (running) {
-            try {
-                autoStorage.waitForTake();
-            } catch (InterruptedException e) {
-                break;
-            }
-            refillTasks();
-        }
-    }
-
     public Storage getEngineStorage() {
         return engineStorage;
     }
@@ -159,19 +150,5 @@ public class Factory {
 
     public int getTaskCount() {
         return activeWorkers.get();
-    }
-
-    public void serialize(DataOutputStream out) throws IOException {
-        carcaseStorage.serialize(out);
-        engineStorage.serialize(out);
-        accessoryStorage.serialize(out);
-        autoStorage.serialize(out);
-    }
-
-    public void deserialize(DataInputStream in) throws IOException {
-        carcaseStorage.deserialize(in);
-        engineStorage.deserialize(in);
-        accessoryStorage.deserialize(in);
-        autoStorage.deserialize(in);
     }
 }

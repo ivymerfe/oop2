@@ -1,19 +1,25 @@
 package labs.factory.model;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Storage {
+public class Storage implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 0;
+
     private final List<Item> items = new LinkedList<>();
     private int freeSpace;
 
-    private final Object takeLock = new Object();
+    private transient Runnable takeListener;
 
     public Storage(int capacity) {
         this.freeSpace = capacity;
+    }
+
+    public void setTakeListener(Runnable r) {
+        takeListener = r;
     }
 
     public synchronized int getFreeSpace() {
@@ -22,12 +28,6 @@ public class Storage {
 
     public synchronized int getItemCount() {
         return items.size();
-    }
-
-    public void waitForTake() throws InterruptedException {
-        synchronized (takeLock) {
-            takeLock.wait();
-        }
     }
 
     public synchronized void addItem(Item item) throws InterruptedException {
@@ -46,33 +46,9 @@ public class Storage {
         Item item = items.removeLast();
         freeSpace += 1;
         notifyAll();
-        synchronized (takeLock) {
-            takeLock.notifyAll();
+        if (takeListener != null) {
+            takeListener.run();
         }
         return item;
-    }
-
-    public void serialize(DataOutputStream out) throws IOException {
-        out.writeInt(items.size());
-        for (Item item : items) {
-            out.writeInt(item.getType().ordinal());
-            item.serialize(out);
-        }
-    }
-
-    public void deserialize(DataInputStream in) throws IOException {
-        int itemCount = in.readInt();
-        for (int i = 0; i < itemCount; i++) {
-            ItemType type = ItemType.values()[in.readInt()];
-            Item item = switch (type) {
-                case Carcase -> new Carcase(in);
-                case Accessory -> new Accessory(in);
-                case Engine -> new Engine(in);
-                case Auto -> new Auto(in);
-                case Item -> new Item(in);
-            };
-            items.add(item);
-            freeSpace -= 1;
-        }
     }
 }
