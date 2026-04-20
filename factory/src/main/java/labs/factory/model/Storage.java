@@ -5,11 +5,11 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Storage implements Serializable {
+public class Storage<T extends Item> implements Serializable {
     @Serial
     private static final long serialVersionUID = 0;
 
-    private final List<Item> items = new LinkedList<>();
+    private final List<T> items = new LinkedList<>();
     private int freeSpace;
 
     private transient Runnable takeListener;
@@ -30,22 +30,25 @@ public class Storage implements Serializable {
         return items.size();
     }
 
-    public synchronized void addItem(Item item) throws InterruptedException {
+    public synchronized void addItem(T item) throws InterruptedException {
         while (freeSpace == 0) {
-            wait();
+            wait(100);
         }
         freeSpace -= 1;
         items.add(item);
         notifyAll();
     }
 
-    public synchronized Item takeItem() throws InterruptedException {
-        while (items.isEmpty()) {
-            wait();
+    public T takeItem() throws InterruptedException {
+        T item;
+        synchronized (this) {
+            while (items.isEmpty()) {
+                wait(100);
+            }
+            item = items.removeLast();
+            freeSpace += 1;
+            notifyAll();
         }
-        Item item = items.removeLast();
-        freeSpace += 1;
-        notifyAll();
         if (takeListener != null) {
             takeListener.run();
         }

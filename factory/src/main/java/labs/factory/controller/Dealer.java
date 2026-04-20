@@ -7,7 +7,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiConsumer;
 import java.util.function.IntSupplier;
 
-public class Dealer extends Thread {
+public class Dealer implements Runnable {
     private final int dealerId;
     private final Storage autoStorage;
     private final IntSupplier delaySupplier;
@@ -26,10 +26,10 @@ public class Dealer extends Thread {
         try {
             Thread.sleep(ThreadLocalRandom.current().nextInt(0, delaySupplier.getAsInt()));
         } catch (InterruptedException e) {
-            interrupt();
+            Thread.currentThread().interrupt();
             return;
         }
-        while (!isInterrupted()) {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 Auto auto = (Auto) autoStorage.takeItem();
                 if (onSale != null) {
@@ -37,7 +37,7 @@ public class Dealer extends Thread {
                 }
                 Thread.sleep(delaySupplier.getAsInt());
             } catch (InterruptedException e) {
-                interrupt();
+                Thread.currentThread().interrupt();
                 break;
             }
         }

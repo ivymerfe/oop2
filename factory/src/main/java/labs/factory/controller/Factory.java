@@ -13,13 +13,13 @@ import java.util.function.BiConsumer;
 public class Factory {
     private final FactoryConfig config;
 
-    private final Storage carcaseStorage;
-    private final Storage engineStorage;
-    private final Storage accessoryStorage;
-    private final Storage autoStorage;
+    private final Storage<Carcase> carcaseStorage;
+    private final Storage<Engine> engineStorage;
+    private final Storage<Accessory> accessoryStorage;
+    private final Storage<Auto> autoStorage;
 
-    private final List<Supplier> suppliers = new ArrayList<>();
-    private final List<Dealer> dealers = new ArrayList<>();
+    private final List<Thread> suppliers = new ArrayList<>();
+    private final List<Thread> dealers = new ArrayList<>();
 
     private ThreadPool workerPool;
     private final AtomicInteger activeWorkers = new AtomicInteger(0);
@@ -58,23 +58,19 @@ public class Factory {
         running = true;
         for (int i = 0; i < config.carcaseSupplierCount; i++) {
             Supplier supplier = new Supplier(carcaseStorage, ItemType.Carcase, () -> config.carcaseSupplierDelay);
-            suppliers.add(supplier);
-            supplier.start();
+            suppliers.add(Thread.ofVirtual().start(supplier));
         }
         for (int i = 0; i < config.engineSuppliersCount; i++) {
             Supplier supplier = new Supplier(engineStorage, ItemType.Engine, () -> config.engineSupplierDelay);
-            suppliers.add(supplier);
-            supplier.start();
+            suppliers.add(Thread.ofVirtual().start(supplier));
         }
         for (int i = 0; i < config.accessorySuppliersCount; i++) {
             Supplier supplier = new Supplier(accessoryStorage, ItemType.Accessory, () -> config.accessorySupplierDelay);
-            suppliers.add(supplier);
-            supplier.start();
+            suppliers.add(Thread.ofVirtual().start(supplier));
         }
         for (int i = 0; i < config.dealersCount; i++) {
             Dealer dealer = new Dealer(i, autoStorage, () -> config.dealerDelay, onSale);
-            dealers.add(dealer);
-            dealer.start();
+            dealers.add(Thread.ofVirtual().start(dealer));
         }
         workerPool = new ThreadPool(config.workersCount);
 
@@ -87,19 +83,13 @@ public class Factory {
         }
         running = false;
 
-        for (Supplier supplier : suppliers) {
+        for (Thread supplier : suppliers) {
             supplier.interrupt();
         }
-        for (Dealer dealer : dealers) {
+        for (Thread dealer : dealers) {
             dealer.interrupt();
         }
         workerPool.stop();
-        for (Supplier sup : suppliers) {
-            sup.join();
-        }
-        for (Dealer dealer : dealers) {
-            dealer.join();
-        }
         suppliers.clear();
         dealers.clear();
     }
@@ -118,9 +108,9 @@ public class Factory {
 
     public void buildTask() {
         try {
-            Carcase carcase = (Carcase) carcaseStorage.takeItem();
-            Engine engine = (Engine) engineStorage.takeItem();
-            Accessory accessory = (Accessory) accessoryStorage.takeItem();
+            Carcase carcase = carcaseStorage.takeItem();
+            Engine engine = engineStorage.takeItem();
+            Accessory accessory = accessoryStorage.takeItem();
             Thread.sleep(config.workerDelay);
             Auto auto = new Auto(carcase, engine, accessory);
             autoStorage.addItem(auto);
@@ -128,23 +118,22 @@ public class Factory {
 
         } finally {
             activeWorkers.decrementAndGet();
-            refillTasks();
         }
     }
 
-    public Storage getEngineStorage() {
+    public Storage<Engine> getEngineStorage() {
         return engineStorage;
     }
 
-    public Storage getCarcaseStorage() {
+    public Storage<Carcase> getCarcaseStorage() {
         return carcaseStorage;
     }
 
-    public Storage getAccessoryStorage() {
+    public Storage<Accessory> getAccessoryStorage() {
         return accessoryStorage;
     }
 
-    public Storage getAutoStorage() {
+    public Storage<Auto> getAutoStorage() {
         return autoStorage;
     }
 

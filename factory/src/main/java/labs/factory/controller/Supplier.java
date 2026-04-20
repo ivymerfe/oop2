@@ -5,7 +5,7 @@ import labs.factory.model.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.IntSupplier;
 
-public class Supplier extends Thread {
+public class Supplier implements Runnable {
     private final Storage storage;
     private final ItemType itemType;
     private final IntSupplier delaySupplier;
@@ -22,10 +22,10 @@ public class Supplier extends Thread {
         try {
             Thread.sleep(ThreadLocalRandom.current().nextInt(0, delaySupplier.getAsInt()));
         } catch (InterruptedException e) {
-            interrupt();
+            Thread.currentThread().interrupt();
             return;
         }
-        while (!isInterrupted()) {
+        while (!Thread.currentThread().isInterrupted()) {
             try {
                 Item item = switch (itemType) {
                     case Carcase -> new Carcase();
@@ -36,7 +36,7 @@ public class Supplier extends Thread {
                 this.storage.addItem(item);
                 Thread.sleep(delaySupplier.getAsInt());
             } catch (InterruptedException e) {
-                interrupt();
+                Thread.currentThread().interrupt();
                 break;
             }
         }

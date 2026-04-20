@@ -4,17 +4,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ThreadPool {
-    private final List<Worker> workers = new LinkedList<>();
     private final List<Runnable> tasks = new LinkedList<>();
 
-    private boolean isShutdown = false;
+    private volatile boolean isShutdown = false;
 
     public ThreadPool(int numThreads) {
         for (int i = 0; i < numThreads; i++) {
-            workers.add(new Worker());
-        }
-        for (Worker w : workers) {
-            w.start();
+            Thread.ofVirtual().start(new Worker());
         }
     }
 
@@ -29,21 +25,20 @@ public class ThreadPool {
         isShutdown = true;
     }
 
-    class Worker extends Thread {
+    class Worker implements Runnable {
         @Override
         public void run() {
-            while (!isShutdown && !isInterrupted()) {
+            while (!isShutdown && !Thread.currentThread().isInterrupted()) {
                 Runnable task;
                 synchronized (tasks) {
                     while (tasks.isEmpty()) {
                         try {
-
                             tasks.wait();
                         } catch (InterruptedException e) {
                             return;
                         }
                     }
-                    task = tasks.remove(0);
+                    task = tasks.removeFirst();
                 }
                 task.run();
             }
