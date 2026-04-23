@@ -1,0 +1,16 @@
+.root {
+    -fx-font-size: 14px;
+    -fx-font-family: "Noto Sans";
+}
+
+.list-view {
+    -fx-background-insets: 0;
+}
+
+.button {
+    -fx-cursor: hand;
+}
+
+.label {
+    -fx-font-weight: 600;
+}
