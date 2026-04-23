@@ -35,6 +35,8 @@ public class AppController {
     private Button connectButton;
     @FXML
     private Button disconnectButton;
+    @FXML
+    public Button refreshUsersButton;
 
     private final ObservableList<String> messages = FXCollections.observableArrayList();
     private final ObservableList<String> users = FXCollections.observableArrayList();

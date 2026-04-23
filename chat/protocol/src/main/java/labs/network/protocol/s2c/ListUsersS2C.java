@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class ListUsersS2C extends Message {
         return new ListUsersS2C(users);
     }
 
-    public record UserInfo(String name, String clientType) {
+    public record UserInfo(String name, String clientType) implements Serializable {
 
     }
 }
