@@ -5,7 +5,10 @@ import labs.network.protocol.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class ListUsersC2S extends Message  {
+import java.io.Serial;
+
+public class ListUsersC2S extends Message {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String session;
@@ -27,6 +30,6 @@ public class ListUsersC2S extends Message  {
     }
 
     public static ListUsersC2S fromXml(Element command) {
-        return new ListUsersC2S(XMLUtils.getRequiredChildText(command, "session"));
+        return new ListUsersC2S(XMLUtils.getContent(command, "session"));
     }
 }

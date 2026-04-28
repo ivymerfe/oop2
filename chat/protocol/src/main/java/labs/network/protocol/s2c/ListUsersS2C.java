@@ -6,11 +6,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.Serializable;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListUsersS2C extends Message {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final List<UserInfo> users;
@@ -38,7 +39,7 @@ public class ListUsersS2C extends Message {
     }
 
     public static ListUsersS2C fromXml(Element success) {
-        Element listUsers = XMLUtils.firstChildElement(success, "listusers");
+        Element listUsers = XMLUtils.findChild(success, "listusers");
         if (listUsers == null) {
             throw new SerializationException("Missing element: listusers");
         }
@@ -50,14 +51,10 @@ public class ListUsersS2C extends Message {
                 continue;
             }
             users.add(new UserInfo(
-                    XMLUtils.getRequiredChildText(element, "name"),
-                    XMLUtils.getRequiredChildText(element, "type")
+                    XMLUtils.getContent(element, "name"),
+                    XMLUtils.getContent(element, "type")
             ));
         }
         return new ListUsersS2C(users);
-    }
-
-    public record UserInfo(String name, String clientType) implements Serializable {
-
     }
 }

@@ -16,7 +16,6 @@ public class App extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("/labs.network.client/main-view.fxml"));
         Parent root = fxmlLoader.load();
         AppController controller = fxmlLoader.getController();
-        controller.init(getParameters().getRaw());
 
         Scene scene = new Scene(root, 980, 640);
         scene.getStylesheets().add(getClass().getResource("/labs.network.client/style.css").toExternalForm());

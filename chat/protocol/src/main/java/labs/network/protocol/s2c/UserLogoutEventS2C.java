@@ -5,7 +5,10 @@ import labs.network.protocol.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.io.Serial;
+
 public class UserLogoutEventS2C extends Message {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String name;
@@ -27,6 +30,6 @@ public class UserLogoutEventS2C extends Message {
     }
 
     public static UserLogoutEventS2C fromXml(Element event) {
-        return new UserLogoutEventS2C(XMLUtils.getRequiredChildText(event, "name"));
+        return new UserLogoutEventS2C(XMLUtils.getContent(event, "name"));
     }
 }

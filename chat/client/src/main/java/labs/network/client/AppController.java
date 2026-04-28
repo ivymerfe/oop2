@@ -9,7 +9,10 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import labs.network.protocol.UserInfo;
+import labs.network.protocol.s2c.ListUsersS2C;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AppController {
@@ -40,6 +43,7 @@ public class AppController {
 
     private final ObservableList<String> messages = FXCollections.observableArrayList();
     private final ObservableList<String> users = FXCollections.observableArrayList();
+    private List<UserInfo> userInfos = new ArrayList<>();
     private Client client;
 
     @FXML
@@ -48,29 +52,10 @@ public class AppController {
         serializerChoice.setValue("xml");
         hostField.setText("localhost");
         portField.setText("5000");
-        clientTypeField.setText("javafx-client");
+        clientTypeField.setText("lol");
         messagesList.setItems(messages);
         usersList.setItems(users);
         updateButtons(false);
-    }
-
-    public void init(List<String> args) {
-        for (String arg : args) {
-            if (arg.startsWith("--host=")) {
-                hostField.setText(arg.substring("--host=".length()));
-            } else if (arg.startsWith("--port=")) {
-                portField.setText(arg.substring("--port=".length()));
-            } else if (arg.startsWith("--name=")) {
-                nameField.setText(arg.substring("--name=".length()));
-            } else if (arg.startsWith("--serializer=")) {
-                String value = arg.substring("--serializer=".length()).toLowerCase();
-                if ("xml".equals(value) || "object".equals(value)) {
-                    serializerChoice.setValue(value);
-                }
-            } else if (arg.startsWith("--type=")) {
-                clientTypeField.setText(arg.substring("--type=".length()));
-            }
-        }
     }
 
     @FXML
@@ -83,18 +68,16 @@ public class AppController {
         String name = nameField.getText().strip();
         String clientType = clientTypeField.getText().strip();
         if (host.isEmpty() || portValue.isEmpty() || name.isEmpty() || clientType.isEmpty()) {
-            appendMessage("[error] Fill all connection fields");
+            appendError("Fill all connection fields");
             return;
         }
-
         int port;
         try {
             port = Integer.parseInt(portValue);
         } catch (NumberFormatException e) {
-            appendMessage("[error] Invalid port");
+            appendError("Invalid port");
             return;
         }
-
         Client.SerializerMode mode = "object".equalsIgnoreCase(serializerChoice.getValue())
                 ? Client.SerializerMode.OBJECT
                 : Client.SerializerMode.XML;
@@ -122,7 +105,7 @@ public class AppController {
         }
         Client current = client;
         if (current == null) {
-            appendMessage("[error] Not connected");
+            appendError("Not connected");
             return;
         }
         current.sendChatMessage(text);
@@ -133,24 +116,37 @@ public class AppController {
     public void refreshUsers() {
         Client current = client;
         if (current == null) {
-            appendMessage("[error] Not connected");
+            appendError("Not connected");
             return;
         }
         current.requestUsers();
     }
 
-    private void appendMessage(String text) {
+    private void appendText(String text) {
         Platform.runLater(() -> {
             messages.add(text);
             messagesList.scrollTo(messages.size() - 1);
         });
     }
 
+    private void appendError(String error) {
+        appendText("[error] " + error);
+    }
+
+    private void appendInfo(String info) {
+        appendText("[info] " + info);
+    }
+
+    private void appendMessage(String from, String message) {
+        appendText(from + ": " + message);
+    }
+
     private void updateStatus(String status) {
         Platform.runLater(() -> statusLabel.setText(status));
     }
 
-    private void updateUsers(List<String> newUsers) {
+    private void updateUsers() {
+        List<String> newUsers = userInfos.stream().map(info -> info.name() + " (" + info.clientType() + ")").toList();
         Platform.runLater(() -> users.setAll(newUsers));
     }
 
@@ -161,41 +157,54 @@ public class AppController {
 
     private class UiListener implements Client.Listener {
         @Override
-        public void onConnecting(String status) {
+        public void onConnecting(int attempt) {
+            String status = attempt == 0 ? "Подключаюсь" : "Реконнект";
             updateStatus(status);
-            appendMessage("[system] " + status);
+            appendInfo(status);
         }
 
         @Override
-        public void onConnected(String status) {
+        public void onConnected(String username) {
+            String status = "Подключился как: " + username;
             updateStatus(status);
-            appendMessage("[system] " + status);
+            appendInfo(status);
         }
 
         @Override
-        public void onDisconnected(String status) {
+        public void onDisconnected(String reason) {
+            String status = "Отключился: " + reason;
             updateStatus(status);
-            appendMessage("[system] " + status);
+            appendInfo(status);
         }
 
         @Override
         public void onChatMessage(String from, String text) {
-            appendMessage(from + ": " + text);
+            appendMessage(from, text);
         }
 
         @Override
-        public void onSystemEvent(String text) {
-            appendMessage("[system] " + text);
+        public void onUserJoined(String username, String clientType) {
+            userInfos.add(new UserInfo(username, clientType));
+            updateUsers();
+            appendInfo(username + " подключился через клиент " + clientType);
         }
 
         @Override
-        public void onUsers(List<String> users) {
-            updateUsers(users);
+        public void onUserLeft(String username) {
+            userInfos.removeIf(u -> u.name().equals(username));
+            updateUsers();
+            appendInfo(username + " отключился");
         }
 
         @Override
         public void onError(String text) {
-            appendMessage("[error] " + text);
+            appendError(text);
+        }
+
+        @Override
+        public void onUsers(List<UserInfo> newUsers) {
+            userInfos = newUsers;
+            updateUsers();
         }
     }
 }

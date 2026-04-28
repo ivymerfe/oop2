@@ -5,7 +5,10 @@ import labs.network.protocol.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.io.Serial;
+
 public class ChatMessageC2S extends Message {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String message;
@@ -35,8 +38,8 @@ public class ChatMessageC2S extends Message {
 
     public static ChatMessageC2S fromXml(Element command) {
         return new ChatMessageC2S(
-                XMLUtils.getRequiredChildText(command, "message"),
-                XMLUtils.getRequiredChildText(command, "session")
+                XMLUtils.getContent(command, "message"),
+                XMLUtils.getContent(command, "session")
         );
     }
 }

@@ -4,7 +4,10 @@ import labs.network.protocol.Message;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class LogoutResponseS2C extends Message  {
+import java.io.Serial;
+
+public class LogoutResponseS2C extends Message {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Override

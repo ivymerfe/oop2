@@ -5,7 +5,10 @@ import labs.network.protocol.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class EventMessageS2C extends Message  {
+import java.io.Serial;
+
+public class EventMessageS2C extends Message {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String message;
@@ -35,8 +38,8 @@ public class EventMessageS2C extends Message  {
 
     public static EventMessageS2C fromXml(Element event) {
         return new EventMessageS2C(
-                XMLUtils.getRequiredChildText(event, "message"),
-                XMLUtils.getRequiredChildText(event, "name")
+                XMLUtils.getContent(event, "message"),
+                XMLUtils.getContent(event, "name")
         );
     }
 }

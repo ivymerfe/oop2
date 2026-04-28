@@ -60,11 +60,11 @@ public class XMLSerializer implements Serializer {
             return ErrorS2C.fromXml(root);
         }
         if ("success".equals(tag)) {
-            Element listUsers = XMLUtils.firstChildElement(root, "listusers");
+            Element listUsers = XMLUtils.findChild(root, "listusers");
             if (listUsers != null) {
                 return ListUsersS2C.fromXml(root);
             }
-            Element session = XMLUtils.firstChildElement(root, "session");
+            Element session = XMLUtils.findChild(root, "session");
             if (session != null) {
                 return LoginResposeS2C.fromXml(root);
             }

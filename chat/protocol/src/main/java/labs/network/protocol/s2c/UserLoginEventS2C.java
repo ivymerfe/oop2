@@ -5,17 +5,26 @@ import labs.network.protocol.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class UserLoginEventS2C extends Message  {
+import java.io.Serial;
+
+public class UserLoginEventS2C extends Message {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String name;
+    private final String clientType;
 
-    public UserLoginEventS2C(String name) {
+    public UserLoginEventS2C(String name, String clientType) {
         this.name = name;
+        this.clientType = clientType;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getClientType() {
+        return clientType;
     }
 
     @Override
@@ -23,10 +32,13 @@ public class UserLoginEventS2C extends Message  {
         Element event = document.createElement("event");
         event.setAttribute("name", "userlogin");
         XMLUtils.appendTextElement(document, event, "name", name);
+        XMLUtils.appendTextElement(document, event, "type", clientType);
         return event;
     }
 
     public static UserLoginEventS2C fromXml(Element event) {
-        return new UserLoginEventS2C(XMLUtils.getRequiredChildText(event, "name"));
+        String name = XMLUtils.getContent(event, "name");
+        String clientType = XMLUtils.getOrDefault(event, "type", "unknown");
+        return new UserLoginEventS2C(name, clientType);
     }
 }

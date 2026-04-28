@@ -5,7 +5,10 @@ import labs.network.protocol.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.io.Serial;
+
 public class LogoutC2S extends Message {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String session;
@@ -27,6 +30,6 @@ public class LogoutC2S extends Message {
     }
 
     public static LogoutC2S fromXml(Element command) {
-        return new LogoutC2S(XMLUtils.getRequiredChildText(command, "session"));
+        return new LogoutC2S(XMLUtils.getContent(command, "session"));
     }
 }

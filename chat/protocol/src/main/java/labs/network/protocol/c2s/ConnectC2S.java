@@ -5,38 +5,41 @@ import labs.network.protocol.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class ConnectC2S extends Message  {
-	private static final long serialVersionUID = 1L;
+import java.io.Serial;
 
-	private final String name;
-	private final String clientType;
+public class ConnectC2S extends Message {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-	public ConnectC2S(String name, String clientType) {
-		this.name = name;
-		this.clientType = clientType;
-	}
+    private final String name;
+    private final String clientType;
 
-	public String getName() {
-		return name;
-	}
+    public ConnectC2S(String name, String clientType) {
+        this.name = name;
+        this.clientType = clientType;
+    }
 
-	public String getClientType() {
-		return clientType;
-	}
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public Element toXmlElement(Document document) {
-		Element command = document.createElement("command");
-		command.setAttribute("name", "login");
-		XMLUtils.appendTextElement(document, command, "name", name);
-		XMLUtils.appendTextElement(document, command, "type", clientType);
-		return command;
-	}
+    public String getClientType() {
+        return clientType;
+    }
 
-	public static ConnectC2S fromXml(Element command) {
-		return new ConnectC2S(
-				XMLUtils.getRequiredChildText(command, "name"),
-				XMLUtils.getRequiredChildText(command, "type")
-		);
-	}
+    @Override
+    public Element toXmlElement(Document document) {
+        Element command = document.createElement("command");
+        command.setAttribute("name", "login");
+        XMLUtils.appendTextElement(document, command, "name", name);
+        XMLUtils.appendTextElement(document, command, "type", clientType);
+        return command;
+    }
+
+    public static ConnectC2S fromXml(Element command) {
+        return new ConnectC2S(
+                XMLUtils.getContent(command, "name"),
+                XMLUtils.getContent(command, "type")
+        );
+    }
 }

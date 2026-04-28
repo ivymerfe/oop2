@@ -7,7 +7,7 @@ group = "labs.network.server"
 version = "1.0.0"
 
 application {
-    mainClass.set("labs.network.server.Server")
+    mainClass.set("labs.network.server.Main")
 }
 
 dependencies {

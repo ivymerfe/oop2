@@ -15,8 +15,8 @@ public final class XMLUtils {
         parent.appendChild(element);
     }
 
-    public static String getRequiredChildText(Element parent, String childTag) {
-        Element child = firstChildElement(parent, childTag);
+    public static String getContent(Element parent, String childTag) {
+        Element child = findChild(parent, childTag);
         if (child == null) {
             throw new SerializationException("Missing element: " + childTag);
         }
@@ -27,7 +27,19 @@ public final class XMLUtils {
         return text;
     }
 
-    public static Element firstChildElement(Element parent, String tagName) {
+    public static String getOrDefault(Element parent, String childTag, String def) {
+        Element child = findChild(parent, childTag);
+        if (child == null) {
+            return def;
+        }
+        String text = child.getTextContent();
+        if (text == null) {
+            return def;
+        }
+        return text;
+    }
+
+    public static Element findChild(Element parent, String tagName) {
         NodeList children = parent.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             Node node = children.item(i);

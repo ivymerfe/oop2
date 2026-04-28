@@ -5,7 +5,10 @@ import labs.network.protocol.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class ErrorS2C extends Message  {
+import java.io.Serial;
+
+public class ErrorS2C extends Message {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private final String message;
@@ -26,6 +29,6 @@ public class ErrorS2C extends Message  {
     }
 
     public static ErrorS2C fromXml(Element error) {
-        return new ErrorS2C(XMLUtils.getRequiredChildText(error, "message"));
+        return new ErrorS2C(XMLUtils.getContent(error, "message"));
     }
 }
