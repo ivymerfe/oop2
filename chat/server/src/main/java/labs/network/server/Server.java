@@ -135,7 +135,6 @@ public class Server {
 
         if (clientChannel != null) {
             clientChannel.configureBlocking(false);
-            clientChannel.setOption(StandardSocketOptions.TCP_NODELAY, true);
 
             Connection context = new Connection(clientChannel);
             clientContexts.put(clientChannel, context);

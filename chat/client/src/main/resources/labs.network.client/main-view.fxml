@@ -25,7 +25,7 @@
                     <TextField fx:id="hostField" promptText="localhost" prefWidth="180.0" GridPane.columnIndex="1"
                                GridPane.rowIndex="0"/>
                     <Label text="Порт" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                    <TextField fx:id="portField" promptText="5000" prefWidth="100.0" GridPane.columnIndex="3"
+                    <TextField fx:id="portField" promptText="6666" prefWidth="100.0" GridPane.columnIndex="3"
                                GridPane.rowIndex="0"/>
 
                     <Label text="Ник" GridPane.columnIndex="0" GridPane.rowIndex="1"/>

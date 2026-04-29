@@ -7,7 +7,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 public class Main {
-    private static final int DEFAULT_PORT = 5000;
+    private static final int DEFAULT_PORT = 6666;
 
     private static final Path SAVE_PATH = Path.of("chat.bin");
 

@@ -9,6 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/client" />
+            <option value="$PROJECT_DIR$/load_tester" />
             <option value="$PROJECT_DIR$/protocol" />
             <option value="$PROJECT_DIR$/server" />
           </set>

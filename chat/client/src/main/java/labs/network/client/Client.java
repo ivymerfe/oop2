@@ -26,7 +26,6 @@ public class Client {
     private static final int BUFFER_SIZE = 64 * 1024;
 
     private final Listener listener;
-    private final AtomicBoolean running;
 
     private String host;
     private int port;
@@ -40,15 +39,16 @@ public class Client {
     private SocketChannel channel;
     private final ByteBuffer readBuffer = ByteBuffer.allocate(BUFFER_SIZE);
     private Thread workerThread;
+    private boolean running;
 
     public Client(Listener listener) {
         this.listener = listener;
-        this.running = new AtomicBoolean(false);
+        this.running = false;
         this.session = null;
     }
 
     public void start(String host, int port, String userName, String password, String clientType, SerializerMode serializerMode) {
-        if (running.get()) {
+        if (running) {
             return;
         }
         this.host = host;
@@ -59,11 +59,11 @@ public class Client {
         this.serializer = serializerMode == SerializerMode.OBJECT ? new ObjectSerializer() : new XMLSerializer();
 
         workerThread = Thread.ofVirtual().start(this::runLoop);
-        running.set(true);
+        running = true;
     }
 
     public void stop() {
-        running.set(false);
+        running = false;
         requestLogout();
         closeSocket();
         if (workerThread != null) {
@@ -74,7 +74,7 @@ public class Client {
 
     private void runLoop() {
         int attempt = 0;
-        while (running.get()) {
+        while (running) {
             listener.onConnecting(attempt);
             attempt += 1;
 
@@ -87,14 +87,14 @@ public class Client {
                 }
                 readMessages();
             } catch (IOException e) {
-                if (running.get()) {
+                if (running) {
                     listener.onDisconnected(e.getMessage());
                 }
             } finally {
                 session = null;
                 closeSocket();
             }
-            if (!running.get()) {
+            if (!running) {
                 break;
             }
             try {
@@ -107,7 +107,7 @@ public class Client {
     }
 
     private void readMessages() throws IOException {
-        while (running.get()) {
+        while (running) {
             Message message = receive();
             switch (message) {
                 case EventMessageS2C eventMessage ->

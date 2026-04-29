@@ -53,7 +53,7 @@ public class AppController {
         serializerChoice.setItems(FXCollections.observableArrayList("xml", "object"));
         serializerChoice.setValue("xml");
         hostField.setText("localhost");
-        portField.setText("5000");
+        portField.setText("6666");
         clientTypeField.setText("lol");
         messagesList.setItems(messages);
         usersList.setItems(users);
