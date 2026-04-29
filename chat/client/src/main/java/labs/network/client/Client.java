@@ -17,89 +17,61 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Client {
-    private static final int MAX_PAYLOAD_SIZE = 1024 * 1024;
     private static final int RECONNECT_TIMEOUT = 2;
 
-    private final String host;
-    private final int port;
-    private final String userName;
-    private final String clientType;
-    private final Serializer serializer;
     private final Listener listener;
     private final AtomicBoolean running;
-    private final BlockingQueue<Message> outbound;
 
-    private volatile String session;
-    private volatile Socket activeSocket;
-    private volatile DataOutputStream activeOut;
-    private volatile Thread workerThread;
-    private volatile Thread writerThread;
+    private String host;
+    private int port;
 
-    public Client(String host, int port, String userName, String clientType, SerializerMode serializerMode, Listener listener) {
-        this.host = Objects.requireNonNull(host);
-        this.port = port;
-        this.userName = Objects.requireNonNull(userName);
-        this.clientType = Objects.requireNonNull(clientType);
-        this.serializer = serializerMode == SerializerMode.OBJECT ? new ObjectSerializer() : new XMLSerializer();
-        this.listener = Objects.requireNonNull(listener);
+    private String userName;
+    private String password;
+    private String clientType;
+    private Serializer serializer;
+
+    private String session;
+    private Socket socket;
+    private DataInputStream in;
+    private DataOutputStream out;
+    private Thread workerThread;
+
+    public Client(Listener listener) {
+        this.listener = listener;
         this.running = new AtomicBoolean(false);
-        this.outbound = new LinkedBlockingQueue<>();
         this.session = null;
     }
 
-    public synchronized void start() {
+    public void start(String host, int port, String userName, String password, String clientType, SerializerMode serializerMode) {
         if (running.get()) {
             return;
         }
-        running.set(true);
+        this.host = host;
+        this.port = port;
+        this.userName = userName;
+        this.password = password;
+        this.clientType = clientType;
+        this.serializer = serializerMode == SerializerMode.OBJECT ? new ObjectSerializer() : new XMLSerializer();
+
         workerThread = Thread.ofVirtual().start(this::runLoop);
+        running.set(true);
     }
 
-    public synchronized void stop() {
+    public void stop() {
         running.set(false);
         requestLogout();
-        closeActiveSocket();
-        Thread writer = writerThread;
-        if (writer != null) {
-            writer.interrupt();
+        closeSocket();
+        if (workerThread != null) {
+            workerThread.interrupt();
         }
-        Thread worker = workerThread;
-        if (worker != null) {
-            worker.interrupt();
-        }
-        listener.onDisconnected("Client stopped");
-    }
-
-    public void sendChatMessage(String text) {
-        if (text == null || text.isBlank()) {
-            return;
-        }
-        String currentSession = session;
-        if (currentSession == null) {
-            listener.onError("Not connected");
-            return;
-        }
-        outbound.offer(new ChatMessageC2S(text.strip(), currentSession));
-    }
-
-    public void requestUsers() {
-        String currentSession = session;
-        if (currentSession == null) {
-            listener.onError("Not connected");
-            return;
-        }
-        outbound.offer(new ListUsersC2S(currentSession));
+        listener.onStopped();
     }
 
     private void runLoop() {
@@ -108,29 +80,23 @@ public class Client {
             listener.onConnecting(attempt);
             attempt += 1;
 
-            try (Socket socket = new Socket(host, port);
-                 DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-                 DataOutputStream out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
+            try {
+                socket = new Socket(host, port);
+                in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+                out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
                 socket.setTcpNoDelay(true);
-                activeSocket = socket;
-                activeOut = out;
-                performLogin(in, out);
-                startWriter(out);
-                readMessages(in);
+                if (!tryLogin()) {
+                    stop();
+                    return;
+                }
+                readMessages();
             } catch (IOException e) {
                 if (running.get()) {
                     listener.onDisconnected(e.getMessage());
                 }
             } finally {
                 session = null;
-                activeOut = null;
-                activeSocket = null;
-                Thread writer = writerThread;
-                if (writer != null) {
-                    writer.interrupt();
-                }
             }
-
             if (!running.get()) {
                 break;
             }
@@ -143,95 +109,86 @@ public class Client {
         }
     }
 
-    private void performLogin(DataInputStream in, DataOutputStream out) throws IOException {
-        sendNow(out, new ConnectC2S(userName, clientType));
-        Message response = readSingleMessage(in);
+    private void readMessages() throws IOException {
+        while (running.get()) {
+            Message message = receive();
+            switch (message) {
+                case EventMessageS2C eventMessage ->
+                        listener.onChatMessage(eventMessage.getFromName(), eventMessage.getMessage());
+                case UserLoginEventS2C userLoginEvent ->
+                        listener.onUserJoined(userLoginEvent.getName(), userLoginEvent.getClientType());
+                case UserLogoutEventS2C userLogoutEvent -> listener.onUserLeft(userLogoutEvent.getName());
+                case ListUsersS2C listUsers -> listener.onUsers(listUsers.getUsers());
+                case ErrorS2C error -> listener.onError(error.getMessage());
+                case LogoutResponseS2C logout -> {
+                    return;
+                }
+                default -> {
+                }
+            }
+        }
+    }
+
+    private boolean tryLogin() throws IOException {
+        if (!send(new ConnectC2S(userName, clientType, password))) {
+            return false;
+        }
+        Message response = receive();
         if (response instanceof LoginResposeS2C loginResposeS2C) {
             session = loginResposeS2C.getSession();
             listener.onConnected(userName);
-            return;
+            return true;
         }
         if (response instanceof ErrorS2C error) {
-            throw new IOException("Login failed: " + error.getMessage());
+            listener.onError(error.getMessage());
         }
-        throw new IOException("Unexpected login response: " + response.getClass().getSimpleName());
+        return false;
     }
 
-    private void startWriter(DataOutputStream out) {
-        writerThread = Thread.ofVirtual().start(() -> {
-            while (running.get()) {
-                try {
-                    Message next = outbound.poll(1, TimeUnit.SECONDS);
-                    if (next == null) {
-                        continue;
-                    }
-                    synchronized (out) {
-                        writePayload(out, serializer.serialize(next));
-                        out.flush();
-                    }
-                } catch (InterruptedException ignored) {
-                    Thread.currentThread().interrupt();
-                    return;
-                } catch (IOException e) {
-                    return;
-                }
-            }
-        });
-    }
-
-    private void readMessages(DataInputStream in) throws IOException {
-        while (running.get()) {
-            Message message = readSingleMessage(in);
-            if (message instanceof EventMessageS2C eventMessage) {
-                listener.onChatMessage(eventMessage.getFromName(), eventMessage.getMessage());
-                continue;
-            }
-            if (message instanceof UserLoginEventS2C userLoginEvent) {
-                listener.onUserJoined(userLoginEvent.getName(), userLoginEvent.getClientType());
-                continue;
-            }
-            if (message instanceof UserLogoutEventS2C userLogoutEvent) {
-                listener.onUserLeft(userLogoutEvent.getName());
-                continue;
-            }
-            if (message instanceof ListUsersS2C listUsers) {
-                listener.onUsers(listUsers.getUsers());
-                continue;
-            }
-            if (message instanceof ErrorS2C error) {
-                listener.onError(error.getMessage());
-                continue;
-            }
-            if (message instanceof LogoutResponseS2C) {
-                return;
-            }
+    public void sendChatMessage(String text) {
+        if (text == null || text.isBlank()) {
+            return;
         }
+        String currentSession = session;
+        if (currentSession == null) {
+            listener.onError("Not connected");
+            return;
+        }
+        send(new ChatMessageC2S(text.strip(), currentSession));
     }
 
-    private Message readSingleMessage(DataInputStream in) throws IOException {
-        byte[] payload = readPayload(in);
-        return serializer.deserialize(payload);
-    }
-
-    private void sendNow(DataOutputStream out, Message message) throws IOException {
-        writePayload(out, serializer.serialize(message));
-        out.flush();
+    public void requestUsers() {
+        String currentSession = session;
+        if (currentSession == null) {
+            listener.onError("Not connected");
+            return;
+        }
+        send(new ListUsersC2S(currentSession));
     }
 
     private void requestLogout() {
-        DataOutputStream out = activeOut;
-        String currentSession = session;
-        if (out == null || currentSession == null) {
-            return;
-        }
-        try {
-            sendNow(out, new LogoutC2S(currentSession));
-        } catch (IOException ignored) {
-        }
+        send(new LogoutC2S(session));
     }
 
-    private void closeActiveSocket() {
-        Socket socket = activeSocket;
+    private Message receive() throws IOException {
+        return serializer.deserialize(Payload.read(in));
+    }
+
+    private boolean send(Message message) {
+        if (serializer == null) {
+            return false;
+        }
+        try {
+            Payload.write(out, serializer.serialize(message));
+            out.flush();
+            return true;
+        } catch (IOException e) {
+            listener.onError(e.getMessage());
+        }
+        return false;
+    }
+
+    private void closeSocket() {
         if (socket != null) {
             try {
                 socket.close();
@@ -240,23 +197,8 @@ public class Client {
         }
     }
 
-    private byte[] readPayload(DataInputStream in) throws IOException {
-        int length = in.readInt();
-        if (length <= 0 || length > MAX_PAYLOAD_SIZE) {
-            throw new IOException("Invalid payload size: " + length);
-        }
-        byte[] payload = new byte[length];
-        try {
-            in.readFully(payload);
-        } catch (EOFException e) {
-            throw new IOException("Connection closed", e);
-        }
-        return payload;
-    }
-
-    private void writePayload(DataOutputStream out, byte[] payload) throws IOException {
-        out.writeInt(payload.length);
-        out.write(payload);
+    public String getUserName() {
+        return userName;
     }
 
     public enum SerializerMode {
@@ -270,6 +212,8 @@ public class Client {
         void onConnected(String username);
 
         void onDisconnected(String reason);
+
+        void onStopped();
 
         void onChatMessage(String from, String text);
 

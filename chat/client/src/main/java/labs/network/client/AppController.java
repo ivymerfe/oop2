@@ -10,7 +10,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import labs.network.protocol.UserInfo;
-import labs.network.protocol.s2c.ListUsersS2C;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +21,8 @@ public class AppController {
     private TextField portField;
     @FXML
     private TextField nameField;
+    @FXML
+    public TextField passField;
     @FXML
     private TextField clientTypeField;
     @FXML
@@ -48,6 +49,7 @@ public class AppController {
 
     @FXML
     private void initialize() {
+        client = new Client(new UiListener());
         serializerChoice.setItems(FXCollections.observableArrayList("xml", "object"));
         serializerChoice.setValue("xml");
         hostField.setText("localhost");
@@ -60,12 +62,10 @@ public class AppController {
 
     @FXML
     public void connect() {
-        if (client != null) {
-            return;
-        }
         String host = hostField.getText().strip();
         String portValue = portField.getText().strip();
         String name = nameField.getText().strip();
+        String password = passField.getText().strip();
         String clientType = clientTypeField.getText().strip();
         if (host.isEmpty() || portValue.isEmpty() || name.isEmpty() || clientType.isEmpty()) {
             appendError("Fill all connection fields");
@@ -82,19 +82,13 @@ public class AppController {
                 ? Client.SerializerMode.OBJECT
                 : Client.SerializerMode.XML;
 
-        client = new Client(host, port, name, clientType, mode, new UiListener());
-        client.start();
+        client.start(host, port, name, password, clientType, mode);
         updateButtons(true);
     }
 
     @FXML
     public void disconnect() {
-        Client current = client;
-        client = null;
-        if (current != null) {
-            current.stop();
-        }
-        updateButtons(false);
+        client.stop();
     }
 
     @FXML
@@ -109,6 +103,7 @@ public class AppController {
             return;
         }
         current.sendChatMessage(text);
+        appendMessage(client.getUserName(), text);
         messageField.clear();
     }
 
@@ -150,9 +145,9 @@ public class AppController {
         Platform.runLater(() -> users.setAll(newUsers));
     }
 
-    private void updateButtons(boolean connected) {
-        connectButton.setDisable(connected);
-        disconnectButton.setDisable(!connected);
+    private void updateButtons(boolean running) {
+        connectButton.setDisable(running);
+        disconnectButton.setDisable(!running);
     }
 
     private class UiListener implements Client.Listener {
@@ -175,6 +170,12 @@ public class AppController {
             String status = "Отключился: " + reason;
             updateStatus(status);
             appendInfo(status);
+        }
+
+        @Override
+        public void onStopped() {
+            updateStatus("Отключен");
+            updateButtons(false);
         }
 
         @Override

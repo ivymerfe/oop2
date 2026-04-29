@@ -13,10 +13,12 @@ public class ConnectC2S extends Message {
 
     private final String name;
     private final String clientType;
+    private final String password;
 
-    public ConnectC2S(String name, String clientType) {
+    public ConnectC2S(String name, String clientType, String password) {
         this.name = name;
         this.clientType = clientType;
+        this.password = password;
     }
 
     public String getName() {
@@ -27,19 +29,25 @@ public class ConnectC2S extends Message {
         return clientType;
     }
 
+    public String getPassword() {
+        return password;
+    }
+
     @Override
     public Element toXmlElement(Document document) {
         Element command = document.createElement("command");
         command.setAttribute("name", "login");
         XMLUtils.appendTextElement(document, command, "name", name);
         XMLUtils.appendTextElement(document, command, "type", clientType);
+        XMLUtils.appendTextElement(document, command, "password", password);
         return command;
     }
 
     public static ConnectC2S fromXml(Element command) {
         return new ConnectC2S(
                 XMLUtils.getContent(command, "name"),
-                XMLUtils.getContent(command, "type")
+                XMLUtils.getContent(command, "type"),
+                XMLUtils.getOrDefault(command, "password", "")
         );
     }
 }

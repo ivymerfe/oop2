@@ -2,6 +2,7 @@ package labs.network.server;
 
 import labs.network.protocol.*;
 import labs.network.protocol.c2s.ConnectC2S;
+import labs.network.protocol.s2c.ErrorS2C;
 
 import java.io.*;
 import java.net.Socket;
@@ -12,12 +13,12 @@ public final class ConnectionContext implements AutoCloseable {
     public final DataInputStream in;
     public final DataOutputStream out;
     public Serializer serializer;
-    public UserState user;
+    public String sessionId;
 
     public ConnectionContext(Socket socket) throws IOException {
         this.socket = socket;
         this.in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-        this.out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream())));
+        this.out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
     }
 
     public void send(Message message) throws IOException {
@@ -26,6 +27,11 @@ public final class ConnectionContext implements AutoCloseable {
         }
         byte[] payload = serializer.serialize(message);
         Payload.write(out, payload);
+        out.flush();
+    }
+
+    public void sendError(String error) throws IOException {
+        send(new ErrorS2C(error));
     }
 
     public Message receive() throws IOException {

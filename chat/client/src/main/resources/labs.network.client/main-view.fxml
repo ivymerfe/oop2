@@ -22,23 +22,25 @@
             </padding>
             <VBox spacing="8.0">
                 <GridPane hgap="8.0" vgap="8.0">
-                    <Label text="Host" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <Label text="Хост" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
                     <TextField fx:id="hostField" promptText="localhost" prefWidth="180.0" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
-                    <Label text="Port" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <Label text="Порт" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
                     <TextField fx:id="portField" promptText="5000" prefWidth="100.0" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
 
-                    <Label text="Name" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <Label text="Ник" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
                     <TextField fx:id="nameField" promptText="nickname" prefWidth="180.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                    <Label text="Serializer" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                    <ChoiceBox fx:id="serializerChoice" prefWidth="140.0" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
-                    <Label text="Client Type" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
-                    <TextField fx:id="clientTypeField" promptText="javafx-client" prefWidth="180.0" GridPane.columnIndex="5" GridPane.rowIndex="1"/>
+                    <Label text="Пароль" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <TextField fx:id="passField" promptText="password" prefWidth="180.0" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                    <Label text="Название клиента" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <TextField fx:id="clientTypeField" promptText="clie1" prefWidth="180.0" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    <Label text="Serializer" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                    <ChoiceBox fx:id="serializerChoice" prefWidth="140.0" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
                 </GridPane>
                 <HBox spacing="8.0" alignment="CENTER_LEFT">
-                    <Button fx:id="connectButton" mnemonicParsing="false" onAction="#connect" text="Connect"/>
-                    <Button fx:id="disconnectButton" mnemonicParsing="false" onAction="#disconnect" text="Disconnect"/>
-                    <Button fx:id="refreshUsersButton" mnemonicParsing="false" onAction="#refreshUsers" text="List Users"/>
-                    <Label fx:id="statusLabel" text="Disconnected"/>
+                    <Button fx:id="connectButton" mnemonicParsing="false" onAction="#connect" text="Подкл"/>
+                    <Button fx:id="disconnectButton" mnemonicParsing="false" onAction="#disconnect" text="Откл"/>
+                    <Button fx:id="refreshUsersButton" mnemonicParsing="false" onAction="#refreshUsers" text="Обновить список"/>
+                    <Label fx:id="statusLabel" text="Отключен"/>
                 </HBox>
             </VBox>
         </VBox>

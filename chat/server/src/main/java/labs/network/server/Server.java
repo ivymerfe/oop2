@@ -5,7 +5,6 @@ import labs.network.protocol.c2s.ChatMessageC2S;
 import labs.network.protocol.c2s.ConnectC2S;
 import labs.network.protocol.c2s.ListUsersC2S;
 import labs.network.protocol.c2s.LogoutC2S;
-import labs.network.protocol.s2c.ErrorS2C;
 import labs.network.protocol.s2c.EventMessageS2C;
 import labs.network.protocol.s2c.ListUsersS2C;
 import labs.network.protocol.s2c.LoginResposeS2C;
@@ -18,48 +17,78 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.TimeUnit;
 
 public class Server {
-    private static final Logger LOG = LogManager.getLogger(Server.class);
+    private static final Logger LOGGER = LogManager.getLogger(Server.class);
+    private static final int SAVE_TIMEOUT = 2;
 
+    private final Path savePath;
     private final int port;
     private final int readTimeoutMillis;
     private final ExecutorService workers;
-    private final Object stateLock = new Object();
-    private final Map<String, UserState> usersByName = new LinkedHashMap<>();
-    private final Map<String, UserState> usersBySession = new LinkedHashMap<>();
+    private ChatState chat;
+    private Thread saveThread;
+    private final Map<String, UserState> sessions = new HashMap<>();
 
-    public Server(int port, int readTimeoutMillis, boolean loggingEnabled) {
+    public Server(Path savePath, int port, int readTimeoutMillis, boolean loggingEnabled) {
+        this.savePath = savePath;
         this.port = port;
         this.readTimeoutMillis = readTimeoutMillis;
         this.workers = Executors.newCachedThreadPool();
         if (!loggingEnabled) {
             Configurator.setRootLevel(Level.OFF);
         }
+        loadChat();
+    }
+
+    public void loadChat() {
+        if (Files.exists(savePath)) {
+            try (InputStream stream = Files.newInputStream(savePath)) {
+                ObjectInputStream in = new ObjectInputStream(stream);
+                chat = (ChatState) in.readObject();
+                return;
+            } catch (IOException e) {
+                LOGGER.error(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        chat = new ChatState();
+    }
+
+    public void saveChat() {
+        try (OutputStream stream = Files.newOutputStream(savePath)) {
+            ObjectOutputStream out = new ObjectOutputStream(stream);
+            out.writeObject(chat);
+        } catch (IOException e) {
+            LOGGER.error(e);
+        }
     }
 
     public void start() throws IOException {
+        this.saveThread = Thread.ofVirtual().start(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                saveChat();
+                try {
+                    TimeUnit.SECONDS.sleep(SAVE_TIMEOUT);
+                } catch (InterruptedException ignored) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        });
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            LOG.info("Server started on port {}", port);
+            LOGGER.info("Server started on port {}", port);
             while (true) {
                 Socket socket = serverSocket.accept();
                 socket.setSoTimeout(readTimeoutMillis);
@@ -71,18 +100,18 @@ public class Server {
 
     private void handleConnection(Socket socket) {
         try (ConnectionContext context = new ConnectionContext(socket)) {
-            LOG.info("Client connected: {}", socket.getRemoteSocketAddress());
+            LOGGER.info("Client connected: {}", socket.getRemoteSocketAddress());
             while (true) {
                 boolean ok = false;
                 try {
                     processIncoming(context, context.receive());
                     ok = true;
                 } catch (SocketTimeoutException e) {
-                    LOG.info("Client timed out: {}", socket.getRemoteSocketAddress());
+                    LOGGER.info("Client timed out: {}", socket.getRemoteSocketAddress());
                 } catch (EOFException e) {
-                    LOG.info("Client closed connection: {}", socket.getRemoteSocketAddress());
+                    LOGGER.info("Client closed connection: {}", socket.getRemoteSocketAddress());
                 } catch (IOException e) {
-                    LOG.info("Connection error with {}: {}", socket.getRemoteSocketAddress(), e.getMessage());
+                    LOGGER.info("Connection error with {}: {}", socket.getRemoteSocketAddress(), e.getMessage());
                 }
                 if (!ok) {
                     disconnect(context, true);
@@ -90,7 +119,7 @@ public class Server {
                 }
             }
         } catch (IOException e) {
-            LOG.info("Connection error with {}: {}", socket.getRemoteSocketAddress(), e.getMessage());
+            LOGGER.info("Connection error with {}: {}", socket.getRemoteSocketAddress(), e.getMessage());
         }
     }
 
@@ -111,156 +140,103 @@ public class Server {
             handleLogout(context, logout);
             return;
         }
-        send(context, new ErrorS2C("Unsupported command"));
+        context.sendError("Unsupported command");
     }
 
-    private void handleLogin(ConnectionContext context, ConnectC2S command) throws IOException {
-        String name = command.getName();
-        String clientType = command.getClientType();
+    private void handleLogin(ConnectionContext connection, ConnectC2S command) throws IOException {
+        String name = command.getName().trim();
+        String clientType = command.getClientType().trim();
+        String password = command.getPassword();
         if (name.isEmpty()) {
-            send(context, new ErrorS2C("Name cannot be empty"));
+            connection.sendError("Name cannot be empty");
             return;
         }
         if (clientType.isEmpty()) {
-            send(context, new ErrorS2C("Client type cannot be empty"));
+            connection.sendError("Client type cannot be empty");
             return;
         }
-
-        UserState user;
-        synchronized (stateLock) {
-            if (context.user != null) {
-                send(context, new ErrorS2C("Already logged in"));
+        UserState user = chat.findUser(name);
+        if (user == null) {
+            user = chat.newUser(name, password);
+        } else {
+            if (!user.testPassword(password)) {
+                connection.sendError("Incorrect password");
                 return;
             }
-            user = usersByName.get(name);
-            if (user != null && user.online) {
-                send(context, new ErrorS2C("Nickname is already in use"));
-                return;
-            }
-            if (user == null) {
-                user = new UserState(name, clientType, UUID.randomUUID().toString());
-                usersByName.put(name, user);
-                usersBySession.put(user.sessionId, user);
-            } else {
-                user.clientType = clientType;
-            }
-            user.online = true;
-            user.connection = context;
-            context.user = user;
         }
-
-        send(context, new LoginResposeS2C(user.sessionId));
-        LOG.info("User logged in: {} ({})", user.name, user.sessionId);
-        broadcastEvent(new UserLoginEventS2C(user.name, user.clientType), user.name);
+        user.clientType = clientType;
+        user.connection = connection;
+        String sessionId = UUID.randomUUID().toString();
+        connection.sessionId = sessionId;
+        sessions.put(sessionId, user);
+        connection.send(new LoginResposeS2C(sessionId));
+        LOGGER.info("User logged in: {} ({})", name, sessionId);
+        broadcast(new UserLoginEventS2C(name, clientType), user);
     }
 
     private void handleListUsers(ConnectionContext context, ListUsersC2S command) throws IOException {
-        Optional<UserState> user = authorize(context, command.getSession());
-        if (user.isEmpty()) {
-            send(context, new ErrorS2C("Invalid session"));
+        UserState user = sessions.get(command.getSession());
+        if (user == null) {
+            context.sendError("Invalid session");
             return;
         }
-
-        List<UserInfo> users;
-        synchronized (stateLock) {
-            users = usersByName.values().stream()
-                    .filter(u -> u.online)
-                    .map(u -> new UserInfo(u.name, u.clientType))
-                    .toList();
-        }
-        send(context, new ListUsersS2C(users));
+        List<UserInfo> infos = chat.getUsers().stream().map(u -> new UserInfo(u.name, u.clientType)).toList();
+        context.send(new ListUsersS2C(infos));
     }
 
     private void handleChatMessage(ConnectionContext context, ChatMessageC2S command) throws IOException {
-        Optional<UserState> user = authorize(context, command.getSession());
-        if (user.isEmpty()) {
-            send(context, new ErrorS2C("Invalid session"));
+        UserState user = sessions.get(command.getSession());
+        if (user == null) {
+            context.sendError("Invalid session");
             return;
         }
-        String text = command.getMessage();
+        String text = command.getMessage().trim();
         if (text.isEmpty()) {
-            send(context, new ErrorS2C("Message cannot be empty"));
+            context.sendError("Message cannot be empty");
             return;
         }
-        UserState sender = user.get();
-        broadcastEvent(new EventMessageS2C(text, sender.name), null);
-        send(context, new MessageResponseS2C());
-        LOG.info("Message from {}: {}", sender.name, text);
+        chat.addMessage(new ChatMessage(user.name, text));
+        broadcast(new EventMessageS2C(text, user.name), user);
+        context.send(new MessageResponseS2C());
+        LOGGER.info("Message from {}: {}", user.name, text);
     }
 
     private void handleLogout(ConnectionContext context, LogoutC2S command) throws IOException {
-        Optional<UserState> user = authorize(context, command.getSession());
-        if (user.isEmpty()) {
-            send(context, new ErrorS2C("Invalid session"));
+        UserState user = sessions.get(command.getSession());
+        if (user == null) {
+            context.sendError("Invalid session");
             return;
         }
-        send(context, new LogoutResponseS2C());
+        context.send(new LogoutResponseS2C());
         disconnect(context, true);
     }
 
-    private Optional<UserState> authorize(ConnectionContext context, String session) {
-        synchronized (stateLock) {
-            if (context.user == null) {
-                return Optional.empty();
+    private void broadcast(Message message, UserState excludeUser) {
+        for (UserState user : sessions.values()) {
+            if (user != excludeUser) {
+                ConnectionContext connection = user.connection;
+                if (connection == null) {
+                    continue;
+                }
+                try {
+                    connection.send(message);
+                } catch (IOException e) {
+                    disconnect(connection, true);
+                }
             }
-            UserState bySession = usersBySession.get(session);
-            if (bySession == null) {
-                return Optional.empty();
-            }
-            if (!Objects.equals(bySession, context.user) || !bySession.online) {
-                return Optional.empty();
-            }
-            return Optional.of(bySession);
-        }
-    }
-
-    private void broadcastEvent(Message event, String excludeUser) {
-        List<UserState> recipients;
-        synchronized (stateLock) {
-            recipients = usersByName.values().stream()
-                    .filter(user -> user.online)
-                    .filter(user -> !Objects.equals(user.name, excludeUser))
-                    .toList();
-        }
-        for (UserState recipient : recipients) {
-            ConnectionContext connection = recipient.connection;
-            if (connection == null) {
-                continue;
-            }
-            try {
-                send(connection, event);
-            } catch (IOException e) {
-                disconnect(connection, true);
-            }
-        }
-    }
-
-    private void send(ConnectionContext context, Message message) throws IOException {
-        Serializer serializer = context.serializer;
-        if (serializer == null) {
-            serializer = new XMLSerializer();
-            context.serializer = serializer;
-        }
-        byte[] payload = serializer.serialize(message);
-        synchronized (context.out) {
-            Payload.write(context.out, payload);
-            context.out.flush();
         }
     }
 
     private void disconnect(ConnectionContext context, boolean announce) {
-        UserState user;
-        synchronized (stateLock) {
-            user = context.user;
-            if (user == null || !user.online || user.connection != context) {
-                return;
-            }
-            user.online = false;
-            user.connection = null;
+        UserState user = sessions.get(context.sessionId);
+        if (user == null) {
+            return;
         }
-        LOG.info("User disconnected: {}", user.name);
+        sessions.remove(context.sessionId);
+
+        LOGGER.info("User disconnected: {}", user.name);
         if (announce) {
-            broadcastEvent(new UserLogoutEventS2C(user.name), user.name);
+            broadcast(new UserLogoutEventS2C(user.name), user);
         }
     }
 }
