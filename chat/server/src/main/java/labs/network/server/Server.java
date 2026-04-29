@@ -19,7 +19,6 @@ import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.net.StandardSocketOptions;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.file.Files;
@@ -39,8 +38,8 @@ public class Server {
 
     private ServerSocketChannel serverChannel;
     private Selector selector;
-    private final Map<SocketChannel, Connection> clientContexts = new HashMap<>();
-    private volatile boolean running = false;
+    private final Map<SocketChannel, Connection> connections = new HashMap<>();
+    private boolean running = false;
 
     public Server(Path savePath, int port, boolean loggingEnabled) {
         this.savePath = savePath;
@@ -137,7 +136,7 @@ public class Server {
             clientChannel.configureBlocking(false);
 
             Connection context = new Connection(clientChannel);
-            clientContexts.put(clientChannel, context);
+            connections.put(clientChannel, context);
             clientChannel.register(selector, SelectionKey.OP_READ, context);
 
             LOGGER.info("Connected: {}", clientChannel.getRemoteAddress());
@@ -191,7 +190,7 @@ public class Server {
             }
         }
 
-        clientContexts.remove(channel);
+        connections.remove(channel);
         try {
             channel.close();
         } catch (IOException e) {
@@ -202,7 +201,7 @@ public class Server {
     private void stop() {
         running = false;
 
-        for (Connection conn : clientContexts.values()) {
+        for (Connection conn : connections.values()) {
             try {
                 conn.channel.close();
             } catch (IOException e) {
@@ -248,7 +247,7 @@ public class Server {
             handleLogout(connection, logout);
             return;
         }
-        connection.sendError("Unsupported command");
+        connection.sendError("Неизвестная команда");
     }
 
     private void handleLogin(Connection connection, ConnectC2S command) throws IOException {
