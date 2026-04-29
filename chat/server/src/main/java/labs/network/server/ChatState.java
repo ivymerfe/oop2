@@ -9,10 +9,17 @@ public class ChatState implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Map<String, UserState> users = new HashMap<>();
-    private List<ChatMessage> messages = new ArrayList<>();
+    private List<ChatMessage> messages = new LinkedList<>();
+    private int messageIndex = 0;
 
-    public void addMessage(ChatMessage message) {
-        messages.add(message);
+    public ChatMessage addMessage(String from, String text) {
+        ChatMessage msg = new ChatMessage(from, text, messageIndex);
+        messages.add(msg);
+        messageIndex += 1;
+        if (messages.size() > 200) {
+            messages.removeFirst();
+        }
+        return msg;
     }
 
     public List<ChatMessage> getMessages() {

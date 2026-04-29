@@ -5,6 +5,15 @@
 
 .list-view {
     -fx-background-insets: 0;
+    -fx-font-size: 18px;
+}
+
+.list-cell {
+    -fx-cell-size: 40px;
+}
+
+#messageField {
+    -fx-font-size: 18px;
 }
 
 .button {

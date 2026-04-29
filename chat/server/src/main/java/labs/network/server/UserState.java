@@ -13,9 +13,10 @@ public class UserState implements Serializable {
 
     public final String name;
     public String clientType;
+    public int lastReceivedMessage;
     public boolean hasPassword;
     public byte[] passwordHash;
-    public transient ConnectionContext connection;
+    public transient Connection connection;
 
     public UserState(String name, String password) {
         this.name = name;

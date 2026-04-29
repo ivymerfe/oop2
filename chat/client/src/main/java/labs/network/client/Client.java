@@ -13,18 +13,17 @@ import labs.network.protocol.s2c.LogoutResponseS2C;
 import labs.network.protocol.s2c.UserLoginEventS2C;
 import labs.network.protocol.s2c.UserLogoutEventS2C;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Client {
     private static final int RECONNECT_TIMEOUT = 2;
+    private static final int BUFFER_SIZE = 64 * 1024;
 
     private final Listener listener;
     private final AtomicBoolean running;
@@ -38,9 +37,8 @@ public class Client {
     private Serializer serializer;
 
     private String session;
-    private Socket socket;
-    private DataInputStream in;
-    private DataOutputStream out;
+    private SocketChannel channel;
+    private final ByteBuffer readBuffer = ByteBuffer.allocate(BUFFER_SIZE);
     private Thread workerThread;
 
     public Client(Listener listener) {
@@ -81,10 +79,8 @@ public class Client {
             attempt += 1;
 
             try {
-                socket = new Socket(host, port);
-                in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-                out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-                socket.setTcpNoDelay(true);
+                channel = SocketChannel.open(new InetSocketAddress(host, port));
+                channel.configureBlocking(true);
                 if (!tryLogin()) {
                     stop();
                     return;
@@ -96,6 +92,7 @@ public class Client {
                 }
             } finally {
                 session = null;
+                closeSocket();
             }
             if (!running.get()) {
                 break;
@@ -170,17 +167,17 @@ public class Client {
         send(new LogoutC2S(session));
     }
 
-    private Message receive() throws IOException {
-        return serializer.deserialize(Payload.read(in));
-    }
-
     private boolean send(Message message) {
         if (serializer == null) {
             return false;
         }
         try {
-            Payload.write(out, serializer.serialize(message));
-            out.flush();
+            byte[] payload = serializer.serialize(message);
+            ByteBuffer buf = ByteBuffer.allocate(4 + payload.length);
+            buf.putInt(payload.length);
+            buf.put(payload);
+            buf.flip();
+            channel.write(buf);
             return true;
         } catch (IOException e) {
             listener.onError(e.getMessage());
@@ -188,10 +185,33 @@ public class Client {
         return false;
     }
 
+    private Message receive() throws IOException {
+        if (channel == null || !channel.isOpen()) {
+            throw new IOException("Channel is closed");
+        }
+        while (readBuffer.position() < 4) {
+            if (channel.read(readBuffer) == -1) throw new IOException("Disconnected");
+        }
+        int length = readBuffer.getInt(0);
+        if (length <= 0 || length > BUFFER_SIZE - 4) {
+            throw new IOException("Invalid message length: " + length);
+        }
+        while (readBuffer.position() < 4 + length) {
+            if (channel.read(readBuffer) == -1) throw new IOException("Disconnected");
+        }
+        readBuffer.flip();
+        readBuffer.getInt();
+        byte[] payload = new byte[length];
+        readBuffer.get(payload);
+        readBuffer.compact();
+
+        return serializer.deserialize(payload);
+    }
+
     private void closeSocket() {
-        if (socket != null) {
+        if (channel != null) {
             try {
-                socket.close();
+                channel.close();
             } catch (IOException ignored) {
             }
         }

@@ -5,44 +5,56 @@ import labs.network.protocol.c2s.ConnectC2S;
 import labs.network.protocol.s2c.ErrorS2C;
 
 import java.io.*;
-import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.List;
 
-public final class ConnectionContext implements AutoCloseable {
-    public final Socket socket;
-    public final DataInputStream in;
-    public final DataOutputStream out;
+public class Connection {
+    private static final int BUFFER_SIZE = 64 * 1024;
+
+    final SocketChannel channel;
+    final ByteBuffer readBuffer = ByteBuffer.allocate(BUFFER_SIZE);
     public Serializer serializer;
     public String sessionId;
 
-    public ConnectionContext(Socket socket) throws IOException {
-        this.socket = socket;
-        this.in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-        this.out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+    Connection(SocketChannel channel) {
+        this.channel = channel;
     }
 
-    public void send(Message message) throws IOException {
+    void send(Message message) throws IOException {
         if (serializer == null) {
             serializer = new XMLSerializer();
         }
         byte[] payload = serializer.serialize(message);
-        Payload.write(out, payload);
-        out.flush();
+        ByteBuffer buf = ByteBuffer.allocate(BUFFER_SIZE);
+        buf.putInt(payload.length);
+        buf.put(payload);
+        buf.flip();
+        channel.write(buf);
     }
 
     public void sendError(String error) throws IOException {
         send(new ErrorS2C(error));
     }
 
-    public Message receive() throws IOException {
-        byte[] payload = Payload.read(in);
+    public Message read(ByteBuffer buffer) {
+        if (buffer.remaining() < 4) {
+            return null;
+        }
+        int messageSize = buffer.getInt();
+        if (buffer.remaining() < messageSize) {
+            return null;
+        }
+        byte[] data = new byte[messageSize];
+        buffer.get(data);
+
         if (serializer != null) {
-            return serializer.deserialize(payload);
+            return serializer.deserialize(data);
         }
         List<Serializer> candidates = List.of(new XMLSerializer(), new ObjectSerializer());
         for (Serializer candidate : candidates) {
             try {
-                Message message = candidate.deserialize(payload);
+                Message message = candidate.deserialize(data);
                 if (message instanceof ConnectC2S) {
                     serializer = candidate;
                     return message;
@@ -52,12 +64,4 @@ public final class ConnectionContext implements AutoCloseable {
         }
         throw new IllegalArgumentException("Failed to detect serializer");
     }
-
-    @Override
-    public void close() throws IOException {
-        in.close();
-        out.close();
-        socket.close();
-    }
 }
-

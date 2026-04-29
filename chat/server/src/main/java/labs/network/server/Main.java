@@ -8,17 +8,15 @@ import java.util.Properties;
 
 public class Main {
     private static final int DEFAULT_PORT = 5000;
-    private static final int DEFAULT_READ_TIMEOUT_MS = 120000;
 
     private static final Path SAVE_PATH = Path.of("chat.bin");
 
     public static void main(String[] args) {
         Properties properties = loadProperties();
         int port = parseIntProperty(properties, "port", DEFAULT_PORT);
-        int readTimeout = parseIntProperty(properties, "readTimeoutMillis", DEFAULT_READ_TIMEOUT_MS);
         boolean loggingEnabled = Boolean.parseBoolean(properties.getProperty("loggingEnabled", "true"));
 
-        Server server = new Server(SAVE_PATH, port, readTimeout, loggingEnabled);
+        Server server = new Server(SAVE_PATH, port, loggingEnabled);
         try {
             server.start();
         } catch (IOException e) {
