@@ -133,7 +133,7 @@ public class AppController {
     }
 
     private void appendMessage(String from, String message) {
-        appendText(from + " > " + message);
+        appendText("("+ from + ") > " + message);
     }
 
     private void updateStatus(String status) {

@@ -77,9 +77,8 @@ public class Server {
     public void start() throws IOException {
         this.serverChannel = ServerSocketChannel.open();
         this.selector = Selector.open();
-        serverChannel.configureBlocking(false);
+        serverChannel.configureBlocking(true);
         serverChannel.bind(new InetSocketAddress(port));
-        serverChannel.register(selector, SelectionKey.OP_ACCEPT);
 
         LOGGER.info("Server started on port {}", port);
 
@@ -102,26 +101,7 @@ public class Server {
     private void eventLoop() throws IOException {
         try {
             while (running) {
-                int readyCount = selector.select(1000);
-                if (readyCount == 0) {
-                    continue;
-                }
-                Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
-                while (keyIterator.hasNext()) {
-                    SelectionKey key = keyIterator.next();
-                    keyIterator.remove();
-
-                    try {
-                        if (key.isAcceptable()) {
-                            handleAccept();
-                        } else if (key.isReadable()) {
-                            handleRead(key);
-                        }
-                    } catch (IOException e) {
-                        LOGGER.error(e.getMessage());
-                        closeConnection(key);
-                    }
-                }
+                handleAccept();
             }
         } finally {
             stop();
@@ -130,65 +110,63 @@ public class Server {
 
     private void handleAccept() throws IOException {
         SocketChannel clientChannel = serverChannel.accept();
+        clientChannel.configureBlocking(true);
 
-        if (clientChannel != null) {
-            clientChannel.configureBlocking(false);
+        Connection conn = new Connection(clientChannel);
+        connections.put(clientChannel, conn);
 
-            Connection context = new Connection(clientChannel);
-            connections.put(clientChannel, context);
-            clientChannel.register(selector, SelectionKey.OP_READ, context);
-
-            LOGGER.info("Connected: {}", clientChannel.getRemoteAddress());
-        }
+        LOGGER.info("Connected: {}", clientChannel.getRemoteAddress());
+        Thread.ofVirtual().start(() -> {
+            try {
+                handleRead(conn);
+            } catch (IOException e) {
+                closeConnection(conn);
+            }
+        });
     }
 
-    private void handleRead(SelectionKey key) throws IOException {
-        SocketChannel channel = (SocketChannel) key.channel();
-        Connection context = (Connection) key.attachment();
+    private void handleRead(Connection conn) throws IOException {
+        while (running) {
+            SocketChannel channel = conn.channel;
+            ByteBuffer buffer = conn.readBuffer;
+            int bytesRead = channel.read(buffer);
 
-        ByteBuffer buffer = context.readBuffer;
-        int bytesRead = channel.read(buffer);
+            if (bytesRead == -1) {
+                LOGGER.info("Disconnected: {}", channel.getRemoteAddress());
+                closeConnection(conn);
+                return;
+            }
 
-        if (bytesRead == -1) {
-            LOGGER.info("Disconnected: {}", channel.getRemoteAddress());
-            closeConnection(key);
-            return;
-        }
+            if (bytesRead > 0) {
+                buffer.flip();
 
-        if (bytesRead > 0) {
-            buffer.flip();
-
-            while (buffer.remaining() > 0) {
-                try {
-                    Message message = context.read(buffer);
-                    if (message != null) {
-                        processIncoming(context, message);
-                    } else {
-                        break;
+                while (buffer.remaining() > 0) {
+                    try {
+                        Message message = conn.read(buffer);
+                        if (message != null) {
+                            processIncoming(conn, message);
+                        } else {
+                            break;
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error(e.getMessage());
+                        conn.sendError("Protocol error");
+                        closeConnection(conn);
+                        return;
                     }
-                } catch (Exception e) {
-                    LOGGER.error(e.getMessage());
-                    context.sendError("Protocol error");
-                    closeConnection(key);
-                    return;
                 }
-            }
 
-            buffer.compact();
+                buffer.compact();
+            }
         }
     }
 
-    private void closeConnection(SelectionKey key) {
-        SocketChannel channel = (SocketChannel) key.channel();
-        Connection context = (Connection) key.attachment();
-
-        if (context != null) {
-            UserState user = sessions.get(context.sessionId);
-            if (user != null) {
-                disconnect(context);
-            }
+    private void closeConnection(Connection context) {
+        UserState user = sessions.get(context.sessionId);
+        if (user != null) {
+            disconnect(context);
         }
-
+        SocketChannel channel = context.channel;
         connections.remove(channel);
         try {
             channel.close();

@@ -16,6 +16,10 @@
     -fx-font-size: 18px;
 }
 
+#statusLabel {
+    -fx-font-size: 18px;
+}
+
 .button {
     -fx-cursor: hand;
 }
