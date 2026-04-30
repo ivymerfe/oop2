@@ -68,14 +68,14 @@ public class AppController {
         String password = passField.getText().strip();
         String clientType = clientTypeField.getText().strip();
         if (host.isEmpty() || portValue.isEmpty() || name.isEmpty() || clientType.isEmpty()) {
-            appendError("Fill all connection fields");
+            appendError("Заполни все поля");
             return;
         }
         int port;
         try {
             port = Integer.parseInt(portValue);
         } catch (NumberFormatException e) {
-            appendError("Invalid port");
+            appendError("Плохой порт");
             return;
         }
         Client.SerializerMode mode = "object".equalsIgnoreCase(serializerChoice.getValue())
@@ -103,7 +103,7 @@ public class AppController {
             return;
         }
         current.sendChatMessage(text);
-        appendMessage(client.getUserName(), text);
+        appendMessage("Я", text);
         messageField.clear();
     }
 
@@ -133,7 +133,7 @@ public class AppController {
     }
 
     private void appendMessage(String from, String message) {
-        appendText(from + ": " + message);
+        appendText(from + " > " + message);
     }
 
     private void updateStatus(String status) {

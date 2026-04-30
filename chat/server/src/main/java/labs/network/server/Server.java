@@ -113,7 +113,7 @@ public class Server {
 
                     try {
                         if (key.isAcceptable()) {
-                            handleAccept(key);
+                            handleAccept();
                         } else if (key.isReadable()) {
                             handleRead(key);
                         }
@@ -128,9 +128,8 @@ public class Server {
         }
     }
 
-    private void handleAccept(SelectionKey key) throws IOException {
-        ServerSocketChannel serverSocket = (ServerSocketChannel) key.channel();
-        SocketChannel clientChannel = serverSocket.accept();
+    private void handleAccept() throws IOException {
+        SocketChannel clientChannel = serverChannel.accept();
 
         if (clientChannel != null) {
             clientChannel.configureBlocking(false);

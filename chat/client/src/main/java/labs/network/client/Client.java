@@ -217,10 +217,6 @@ public class Client {
         }
     }
 
-    public String getUserName() {
-        return userName;
-    }
-
     public enum SerializerMode {
         XML,
         OBJECT
