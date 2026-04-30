@@ -3,18 +3,20 @@ package labs.network.server;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChatState implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private Map<String, UserState> users = new HashMap<>();
-    private List<ChatMessage> messages = new LinkedList<>();
+    private Map<String, UserState> users = new ConcurrentHashMap<>();
+    private List<ChatMessage> messages = new CopyOnWriteArrayList<>();
     private int messageIndex = 0;
 
     public ChatMessage addMessage(String from, String text) {
         ChatMessage msg = new ChatMessage(from, text, messageIndex);
-        messages.add(msg);
+//        messages.add(msg);
         messageIndex += 1;
         if (messages.size() > 200) {
             messages.removeFirst();

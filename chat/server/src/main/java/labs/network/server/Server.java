@@ -18,12 +18,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class Server {
@@ -34,11 +35,10 @@ public class Server {
     private final int port;
     private ChatState chat;
     private Thread saveThread;
-    private final Map<String, UserState> sessions = new HashMap<>();
+    private final Map<String, UserState> sessions = new ConcurrentHashMap<>();
 
-    private ServerSocketChannel serverChannel;
-    private Selector selector;
-    private final Map<SocketChannel, Connection> connections = new HashMap<>();
+    private ServerSocket serverSocket;
+    private final Map<Socket, Connection> connections = new ConcurrentHashMap<>();
     private boolean running = false;
 
     public Server(Path savePath, int port, boolean loggingEnabled) {
@@ -75,10 +75,9 @@ public class Server {
     }
 
     public void start() throws IOException {
-        this.serverChannel = ServerSocketChannel.open();
-        this.selector = Selector.open();
-        serverChannel.configureBlocking(true);
-        serverChannel.bind(new InetSocketAddress(port));
+        this.serverSocket = new ServerSocket();
+        serverSocket.setReuseAddress(true);
+        serverSocket.bind(new InetSocketAddress(port));
 
         LOGGER.info("Server started on port {}", port);
 
@@ -109,13 +108,14 @@ public class Server {
     }
 
     private void handleAccept() throws IOException {
-        SocketChannel clientChannel = serverChannel.accept();
-        clientChannel.configureBlocking(true);
+        Socket clientSocket = serverSocket.accept();
+        clientSocket.setTcpNoDelay(true);
 
-        Connection conn = new Connection(clientChannel);
-        connections.put(clientChannel, conn);
+        Connection conn = new Connection(clientSocket);
+        connections.put(clientSocket, conn);
+        conn.startWriter();
 
-        LOGGER.info("Connected: {}", clientChannel.getRemoteAddress());
+        LOGGER.info("Connected: {}", clientSocket.getRemoteSocketAddress());
         Thread.ofVirtual().start(() -> {
             try {
                 handleRead(conn);
@@ -127,36 +127,19 @@ public class Server {
 
     private void handleRead(Connection conn) throws IOException {
         while (running) {
-            SocketChannel channel = conn.channel;
-            ByteBuffer buffer = conn.readBuffer;
-            int bytesRead = channel.read(buffer);
-
-            if (bytesRead == -1) {
-                LOGGER.info("Disconnected: {}", channel.getRemoteAddress());
+            Message message = conn.readMessage();
+            if (message == null) {
+                LOGGER.info("Disconnected: {}", conn.socket.getRemoteSocketAddress());
                 closeConnection(conn);
                 return;
             }
-
-            if (bytesRead > 0) {
-                buffer.flip();
-
-                while (buffer.remaining() > 0) {
-                    try {
-                        Message message = conn.read(buffer);
-                        if (message != null) {
-                            processIncoming(conn, message);
-                        } else {
-                            break;
-                        }
-                    } catch (Exception e) {
-                        LOGGER.error(e.getMessage());
-                        conn.sendError("Protocol error");
-                        closeConnection(conn);
-                        return;
-                    }
-                }
-
-                buffer.compact();
+            try {
+                processIncoming(conn, message);
+            } catch (Exception e) {
+                LOGGER.error(e);
+                conn.sendError("Protocol error");
+                closeConnection(conn);
+                return;
             }
         }
     }
@@ -166,35 +149,23 @@ public class Server {
         if (user != null) {
             disconnect(context);
         }
-        SocketChannel channel = context.channel;
-        connections.remove(channel);
-        try {
-            channel.close();
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-        }
+        connections.remove(context.socket);
+        context.close();
     }
 
     private void stop() {
         running = false;
 
         for (Connection conn : connections.values()) {
-            try {
-                conn.channel.close();
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage());
-            }
+            conn.close();
         }
 
         try {
-            if (selector != null && selector.isOpen()) {
-                selector.close();
-            }
-            if (serverChannel != null && serverChannel.isOpen()) {
-                serverChannel.close();
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                serverSocket.close();
             }
         } catch (IOException e) {
-            LOGGER.error("Error closing server: {}", e.getMessage());
+            LOGGER.error("Error closing server", e);
         }
 
         if (saveThread != null) {
@@ -207,7 +178,7 @@ public class Server {
         }
     }
 
-    private void processIncoming(Connection connection, Message message) throws IOException {
+    private void processIncoming(Connection connection, Message message) {
         if (message instanceof ConnectC2S connect) {
             handleLogin(connection, connect);
             return;
@@ -227,7 +198,7 @@ public class Server {
         connection.sendError("Неизвестная команда");
     }
 
-    private void handleLogin(Connection connection, ConnectC2S command) throws IOException {
+    private void handleLogin(Connection connection, ConnectC2S command) {
         String name = command.getName().trim();
         String clientType = command.getClientType().trim();
         String password = command.getPassword();
@@ -261,12 +232,8 @@ public class Server {
         connection.send(new ListUsersS2C(getUserInfo()));
         for (ChatMessage msg : chat.getMessages()) {
             if (msg.index() > user.lastReceivedMessage) {
-                try {
-                    user.connection.send(new EventMessageS2C(msg.text(), msg.fromName()));
-                    user.lastReceivedMessage = msg.index();
-                } catch (IOException e) {
-                    break;
-                }
+                user.connection.send(new EventMessageS2C(msg.text(), msg.fromName()));
+                user.lastReceivedMessage = msg.index();
             }
         }
     }
@@ -275,7 +242,7 @@ public class Server {
         return chat.getUsers().stream().map(u -> new UserInfo(u.name, u.clientType)).toList();
     }
 
-    private void handleListUsers(Connection connection, ListUsersC2S command) throws IOException {
+    private void handleListUsers(Connection connection, ListUsersC2S command) {
         UserState user = sessions.get(command.getSession());
         if (user == null) {
             connection.sendError("Неизвестная сессия");
@@ -284,7 +251,7 @@ public class Server {
         connection.send(new ListUsersS2C(getUserInfo()));
     }
 
-    private void handleChatMessage(Connection connection, ChatMessageC2S command) throws IOException {
+    private void handleChatMessage(Connection connection, ChatMessageC2S command) {
         UserState user = sessions.get(command.getSession());
         if (user == null) {
             connection.sendError("Неизвестная сессия");
@@ -302,7 +269,7 @@ public class Server {
         LOGGER.info("Message from {}: {}", user.name, text);
     }
 
-    private void handleLogout(Connection connection, LogoutC2S command) throws IOException {
+    private void handleLogout(Connection connection, LogoutC2S command) {
         UserState user = sessions.get(command.getSession());
         if (user == null) {
             connection.sendError("Неизвестная сессия");
@@ -313,27 +280,21 @@ public class Server {
     }
 
     private void broadcast(Message message, UserState excludeUser) {
-        for (UserState user : sessions.values()) {
+        List<UserState> usersCopy = sessions.values().stream().toList();
+        for (UserState user : usersCopy) {
             if (user != excludeUser) {
-                try {
-                    user.connection.send(message);
-                } catch (IOException e) {
-                    LOGGER.error("Error broadcasting to {}: {}", user.name, e.getMessage());
-                }
+                user.connection.send(message);
             }
         }
     }
 
     private void broadcastMessage(ChatMessage msg, UserState from) {
         Message event = new EventMessageS2C(msg.text(), msg.fromName());
-        for (UserState user : sessions.values()) {
+        List<UserState> usersCopy = sessions.values().stream().toList();
+        for (UserState user : usersCopy) {
             if (user != from) {
-                try {
-                    user.connection.send(event);
-                    user.lastReceivedMessage = msg.index();
-                } catch (IOException e) {
-                    LOGGER.error("Error broadcasting to {}: {}", user.name, e.getMessage());
-                }
+                user.connection.send(event);
+                user.lastReceivedMessage = msg.index();
             }
         }
     }
